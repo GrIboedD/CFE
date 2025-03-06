@@ -3,28 +3,35 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Graphics.OpenGL;
+using ErrorCode = OpenTK.Graphics.OpenGL.ErrorCode;
+using OpenTK.GLControl;
 
 namespace _3d_editor
 {
     class GL_Window
     {
-        //Время в секундах
-        private float frameTime = 0.0f;
-
-        //Фпс
-        private int fps = 0;
 
         //Буфер вертексов
-        int VertexBufferObject;
+        int VBO;
 
-        int VertexArrayObject;
+        int VAO;
+
+        int EBO;
 
         //Вертексы
         float[] vertices =
         {
-                -0.5f, -0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f,
-                0.0f,  0.5f, 0.0f
+
+         0.5f,  0.5f, 0.0f,  // top right
+         0.5f, -0.5f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f,  // bottom left
+        -0.5f,  0.5f, 0.0f   // top left
+        };
+
+        uint[] indices =
+        {
+            0, 1, 3,
+            1, 2, 3
         };
 
         //Шейдеры
@@ -45,34 +52,35 @@ namespace _3d_editor
             shader = new Shader("../../../shader.vert", "../../../shader.frag");
             shader.Use();
 
+            VAO = GL.GenVertexArray();
+            GL.BindVertexArray(VAO);
+
+            EBO = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBO);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
+
             //Создание буфера
-            VertexBufferObject = GL.GenBuffer();
-
+            VBO = GL.GenBuffer();
             //Привязка буфера
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
-
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             //Кладем данные в буфер
             GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
 
-            VertexArrayObject = GL.GenVertexArray();
-
-            GL.BindVertexArray(VertexArrayObject);
-
             GL.VertexAttribPointer(shader.GetAttribLocation("aPosition"), 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-
             GL.EnableVertexAttribArray(0);
 
-
             //Отвязка
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindVertexArray(0);
+            //GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            //GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+            //GL.BindVertexArray(0);
 
         }
 
         //Выполняется при изменении размеров окна
-        public void Resize(int Width, int Height)
+        public void Resize(GLControl glControl)
         {
-            //GL.Viewport(0, 0, Width, Height);
+            glControl.MakeCurrent();
+            //GL.Viewport(0, 0, glControl.ClientSize.Width, glControl.ClientSize.Height);
         }
 
         //Выполняется при обновлении фрейма(для расчетов)
@@ -81,19 +89,22 @@ namespace _3d_editor
         }
 
         //Выполняется при обновлении фрейма (для отрисовки)
-        public void RenderFrame()
+        public void RenderFrame(GLControl glControl)
         {
+            glControl.MakeCurrent();
             GL.Clear(ClearBufferMask.ColorBufferBit);
             //shader.Use();
-            GL.BindVertexArray(VertexArrayObject);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
+            //GL.BindVertexArray(VAO);
+            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+            //GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
+            glControl.SwapBuffers();
         }
 
         //Видимо при закрытии окна
         public void Unload()
         {
-            GL.DeleteBuffer(VertexBufferObject);
-            GL.DeleteVertexArray(VertexArrayObject);
+            GL.DeleteBuffer(VBO);
+            GL.DeleteVertexArray(VAO);
 
             //Отвязка от шейдеров
             GL.UseProgram(0);

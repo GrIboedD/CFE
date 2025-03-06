@@ -25,15 +25,12 @@ namespace _3d_editor
 
         private void glControl1_Resize(object sender, EventArgs e)
         {
-            glControl1.MakeCurrent();
-            gl_window.Resize(glControl1.ClientSize.Width, glControl1.ClientSize.Height);
+            gl_window.Resize(glControl1);
         }
 
         private void glControl1_Paint(object sender, PaintEventArgs e)
         {
-            glControl1.MakeCurrent();
-            gl_window.RenderFrame();
-            glControl1.SwapBuffers();
+            gl_window.RenderFrame(glControl1);
 
         }
     }

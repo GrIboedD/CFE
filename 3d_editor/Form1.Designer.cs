@@ -42,7 +42,7 @@
             glControl1.Name = "glControl1";
             glControl1.Profile = OpenTK.Windowing.Common.ContextProfile.Core;
             glControl1.SharedContext = null;
-            glControl1.Size = new Size(707, 571);
+            glControl1.Size = new Size(1017, 640);
             glControl1.TabIndex = 0;
             glControl1.Load += glControl1_Load;
             glControl1.Paint += glControl1_Paint;
@@ -52,7 +52,7 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(707, 571);
+            ClientSize = new Size(1017, 640);
             Controls.Add(glControl1);
             Name = "Form1";
             Text = "Form1";
