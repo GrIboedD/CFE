@@ -1,5 +1,5 @@
 ﻿using System;
-using OpenTK.Graphics.OpenGL4;
+using OpenTK.Graphics.OpenGL;
 using StbImageSharp;
 
 namespace _3d_editor
@@ -11,7 +11,7 @@ namespace _3d_editor
         public Texture(string path_to_texture)
         {
             Handle = GL.GenTexture();
-            use();
+            Use();
             StbImage.stbi_set_flip_vertically_on_load(1);
 
             ImageResult image = ImageResult.FromStream(File.OpenRead(path_to_texture), ColorComponents.RedGreenBlueAlpha);
@@ -22,8 +22,9 @@ namespace _3d_editor
             GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
         }
 
-        void use()
+        public void Use(TextureUnit unit = TextureUnit.Texture0)
         {
+            GL.ActiveTexture(unit);
             GL.BindTexture(TextureTarget.Texture2D, this.Handle);
         }
     }

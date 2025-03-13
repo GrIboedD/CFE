@@ -100,5 +100,11 @@ namespace _3d_editor
         {
             return GL.GetAttribLocation(Handle, attribName);
         }
+
+        public void SetInt(string name, int value)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform1(location, value);
+        }
     }
 }

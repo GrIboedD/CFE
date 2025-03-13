@@ -36,7 +36,7 @@ namespace _3d_editor
 
         //Шейдеры
         Shader shader;
-        Texture texture;
+        Texture texture1, texture2;
         public GL_Window()
         {
             //Console.WriteLine(GL.GetString(StringName.Version));
@@ -51,7 +51,6 @@ namespace _3d_editor
             //Использование шейдеров
             shader = new Shader("../../../shader.vert", "../../../shader.frag");
             shader.Use();
-
             VAO = GL.GenVertexArray();
             GL.BindVertexArray(VAO);
 
@@ -70,8 +69,10 @@ namespace _3d_editor
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
             GL.EnableVertexAttribArray(vertexLocation);
 
-            texture = new Texture("../../../container.jpg");
-
+            texture1 = new Texture("../../../container.jpg");
+            texture2 = new Texture("../../../awesomeface.png");
+            shader.SetInt("texture1", 0);
+            shader.SetInt("texture2", 1);
             int texCoordLocation = shader.GetAttribLocation("aTexCoord"); 
             GL.VertexAttribPointer(shader.GetAttribLocation("aTexCoord"), 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(texCoordLocation);
@@ -97,7 +98,14 @@ namespace _3d_editor
             //float greenValue = (float)Math.Sin(totalTime) / 2.0f + 0.5f;
             //int vertexColorLocation = GL.GetUniformLocation(shader.Handle, "ourColor");
             //GL.Uniform4(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
-
+            float anlge = (float)Math.Sin(totalTime) * 2 * float.Pi;
+            float scale_x = (float)Math.Sin(totalTime) + 1.0f;
+            Matrix4 rotation = Matrix4.CreateRotationZ(anlge);
+            Matrix4 scale = Matrix4.CreateScale(scale_x, scale_x, scale_x);
+            Matrix4 trans = rotation * scale;
+            shader.Use();
+            int location = GL.GetUniformLocation(shader.Handle, "transform");
+            GL.UniformMatrix4(location, true, ref trans);
         }
 
         //Выполняется при обновлении фрейма (для отрисовки)
@@ -105,8 +113,8 @@ namespace _3d_editor
         {
             glControl.MakeCurrent();
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            shader.Use();
-            //GL.BindVertexArray(VAO);
+            texture1.Use(TextureUnit.Texture0);
+            texture2.Use(TextureUnit.Texture1);
             GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
             //GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
             glControl.SwapBuffers();
