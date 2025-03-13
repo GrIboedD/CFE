@@ -22,10 +22,10 @@ namespace _3d_editor
         float[] vertices =
         {
 
-         0.5f,  0.5f, 0.0f,  // top right
-         0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  // bottom left
-        -0.5f,  0.5f, 0.0f   // top left
+         0.5f,  0.5f, 0.0f, 1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f ,1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, // top left
         };
 
         uint[] indices =
@@ -36,7 +36,7 @@ namespace _3d_editor
 
         //Шейдеры
         Shader shader;
-
+        Texture texture;
         public GL_Window()
         {
             //Console.WriteLine(GL.GetString(StringName.Version));
@@ -57,17 +57,24 @@ namespace _3d_editor
 
             EBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBO);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StreamDraw);
 
             //Создание буфера
             VBO = GL.GenBuffer();
             //Привязка буфера
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             //Кладем данные в буфер
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StreamDraw);
 
-            GL.VertexAttribPointer(shader.GetAttribLocation("aPosition"), 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-            GL.EnableVertexAttribArray(0);
+            int vertexLocation = shader.GetAttribLocation("aPos");
+            GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+            GL.EnableVertexAttribArray(vertexLocation);
+
+            texture = new Texture("../../../container.jpg");
+
+            int texCoordLocation = shader.GetAttribLocation("aTexCoord"); 
+            GL.VertexAttribPointer(shader.GetAttribLocation("aTexCoord"), 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
+            GL.EnableVertexAttribArray(texCoordLocation);
 
             //Отвязка
             //GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -80,12 +87,17 @@ namespace _3d_editor
         public void Resize(GLControl glControl)
         {
             glControl.MakeCurrent();
-            //GL.Viewport(0, 0, glControl.ClientSize.Width, glControl.ClientSize.Height);
+            GL.Viewport(0, 0, 800, 800);
         }
 
         //Выполняется при обновлении фрейма(для расчетов)
-        public void UpdateFrame()
+        public void UpdateFrame(float totalTime)
         {
+            //shader.Use();
+            //float greenValue = (float)Math.Sin(totalTime) / 2.0f + 0.5f;
+            //int vertexColorLocation = GL.GetUniformLocation(shader.Handle, "ourColor");
+            //GL.Uniform4(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
         }
 
         //Выполняется при обновлении фрейма (для отрисовки)
@@ -93,7 +105,7 @@ namespace _3d_editor
         {
             glControl.MakeCurrent();
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            //shader.Use();
+            shader.Use();
             //GL.BindVertexArray(VAO);
             GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
             //GL.DrawArrays(PrimitiveType.Triangles, 0, 3);

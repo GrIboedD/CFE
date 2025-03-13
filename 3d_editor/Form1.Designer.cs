@@ -28,7 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             glControl1 = new OpenTK.GLControl.GLControl();
+            timer1 = new System.Windows.Forms.Timer(components);
             SuspendLayout();
             // 
             // glControl1
@@ -48,6 +50,10 @@
             glControl1.Paint += glControl1_Paint;
             glControl1.Resize += glControl1_Resize;
             // 
+            // timer1
+            // 
+            timer1.Tick += timer1_Tick;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -56,11 +62,13 @@
             Controls.Add(glControl1);
             Name = "Form1";
             Text = "Form1";
+            Load += Form1_Load;
             ResumeLayout(false);
         }
 
         #endregion
 
         private OpenTK.GLControl.GLControl glControl1;
+        private System.Windows.Forms.Timer timer1;
     }
 }

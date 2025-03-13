@@ -4,7 +4,7 @@ namespace _3d_editor
 {
     public class Shader
     {
-        int Handle;
+        public int Handle;
         private bool disposedValue = false;
 
         protected virtual void Dispose(bool disposing)
