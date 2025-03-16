@@ -88,24 +88,32 @@ namespace _3d_editor
         public void Resize(GLControl glControl)
         {
             glControl.MakeCurrent();
-            GL.Viewport(0, 0, 800, 800);
+            GL.Viewport(0, 0, glControl.ClientSize.Width, glControl.ClientSize.Height);
         }
 
         //Выполняется при обновлении фрейма(для расчетов)
-        public void UpdateFrame(float totalTime)
+        public void UpdateFrame(float totalTime, int Withd, int Height)
         {
             //shader.Use();
             //float greenValue = (float)Math.Sin(totalTime) / 2.0f + 0.5f;
             //int vertexColorLocation = GL.GetUniformLocation(shader.Handle, "ourColor");
             //GL.Uniform4(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+            //float scale_value = 0.5f - (float)Math.Sin(totalTime) * 0.2f;
+            //Matrix4 scale = Matrix4.CreateScale(scale_value, scale_value, scale_value);
+
             float anlge = (float)Math.Sin(totalTime) * 2 * float.Pi;
-            float scale_x = (float)Math.Sin(totalTime) + 1.0f;
-            Matrix4 rotation = Matrix4.CreateRotationZ(anlge);
-            Matrix4 scale = Matrix4.CreateScale(scale_x, scale_x, scale_x);
-            Matrix4 trans = rotation * scale;
+            float pos_value = (float)Math.Sin(totalTime);
+            Matrix4 translation = Matrix4.CreateTranslation(pos_value, pos_value, 0.0f);
+            Matrix4 rotation = Matrix4.CreateRotationX(anlge);
+            Matrix4 res = translation * rotation;
             shader.Use();
             int location = GL.GetUniformLocation(shader.Handle, "transform");
-            GL.UniformMatrix4(location, true, ref trans);
+            GL.UniformMatrix4(location, true, ref res);
+
+            //Matrix4 model = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(-55.0f));
+            //Matrix4 view = Matrix4.CreateTranslation(0.0f, 0.0f, -3.0f);
+            //Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 4.0f, Withd / Height, 0.1f, 100.0f);
+
         }
 
         //Выполняется при обновлении фрейма (для отрисовки)

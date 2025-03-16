@@ -31,22 +31,24 @@ namespace _3d_editor
 
         private void glControl1_Paint(object sender, PaintEventArgs e)
         {
-           gl_window.RenderFrame(glControl1);
+            gl_window.RenderFrame(glControl1);
 
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
             totalTime += 0.01f;
-            gl_window.UpdateFrame((float)totalTime);
+            gl_window.UpdateFrame((float)totalTime, glControl1.ClientSize.Width, glControl1.ClientSize.Height);
             gl_window.RenderFrame(glControl1);
+            gl_window.UpdateFrame((float)totalTime + 100.0f, glControl1.ClientSize.Width, glControl1.ClientSize.Height);
 
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            timer1.Interval = 1000/60;
+            timer1.Interval = 1000 / 60;
             timer1.Start();
         }
+
     }
 }

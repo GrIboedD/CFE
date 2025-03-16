@@ -2,27 +2,12 @@
 
 namespace _3d_editor
 {
-    public class Shader
+    public class Shader : IDisposable
     {
-        public int Handle;
-        private bool disposedValue = false;
+        public readonly int Handle = GL.CreateProgram();
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                GL.DeleteProgram(Handle);
-                disposedValue = true;
-            }
-        }
+        private bool _disposedValue = false;
 
-        ~Shader()
-        {
-            if (disposedValue == false)
-            {
-                Console.WriteLine("GPU Resource leak! Did you forget to call Dispose()?");
-            }
-        }
 
         public Shader(string vertexPath, string fragmentPath)
         {
@@ -60,8 +45,6 @@ namespace _3d_editor
                 Console.WriteLine(infoLog);
             }
 
-            Handle = GL.CreateProgram();
-
             GL.AttachShader(Handle, VertexShader);
             GL.AttachShader(Handle, FragmentShader);
 
@@ -81,19 +64,11 @@ namespace _3d_editor
             GL.DetachShader(Handle, FragmentShader);
             GL.DeleteShader(VertexShader);
             GL.DeleteShader(FragmentShader);
-
-
         }
 
         public void Use()
         {
             GL.UseProgram(Handle);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         public int GetAttribLocation(string attribName)
@@ -105,6 +80,27 @@ namespace _3d_editor
         {
             int location = GL.GetUniformLocation(Handle, name);
             GL.Uniform1(location, value);
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                GL.DeleteProgram(Handle);
+                _disposedValue = true;
+            }
+        }
+
+        ~Shader()
+        {
+            if (_disposedValue == false)
+            {
+                Console.WriteLine("GPU Resource leak! Did you forget to call Dispose()?");
+            }
         }
     }
 }
