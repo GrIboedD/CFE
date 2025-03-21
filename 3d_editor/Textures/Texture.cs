@@ -2,7 +2,7 @@
 using OpenTK.Graphics.OpenGL;
 using StbImageSharp;
 
-namespace _3d_editor
+namespace _3d_editor.Textures
 {
     class Texture
     {
@@ -25,7 +25,7 @@ namespace _3d_editor
         public void Use(TextureUnit unit = TextureUnit.Texture0)
         {
             GL.ActiveTexture(unit);
-            GL.BindTexture(TextureTarget.Texture2D, this.Handle);
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
         }
     }
 }

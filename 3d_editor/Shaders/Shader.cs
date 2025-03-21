@@ -1,6 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL;
 
-namespace _3d_editor
+namespace _3d_editor.Shaders
 {
     public class Shader : IDisposable
     {

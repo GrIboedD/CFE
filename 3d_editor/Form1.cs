@@ -1,54 +1,28 @@
-using OpenTK.Windowing.Common;
-using OpenTK.Windowing.Desktop;
-using OpenTK.Mathematics;   
-using static OpenTK.Graphics.OpenGL.GL;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using OpenTK.GLControl;
-using System.Windows.Forms;
-
 namespace _3d_editor
 {
 
     public partial class Form1 : Form
     {
 
-        GL_Window gl_window = new GL_Window();
-        double totalTime = 0;
         public Form1()
         {
             InitializeComponent();
         }
 
-        private void glControl1_Load(object sender, EventArgs e)
+        private void OpenGL_Window_Load(object sender, EventArgs e)
         {
-            gl_window.Load();
+            OpenGL_Window.DoLoad();
         }
 
-        private void glControl1_Resize(object sender, EventArgs e)
+        private void OpenGL_Window_Paint(object sender, PaintEventArgs e)
         {
-            gl_window.Resize(glControl1);
+            OpenGL_Window.UpdateFrame();
+            OpenGL_Window.RenderFrame();
         }
 
-        private void glControl1_Paint(object sender, PaintEventArgs e)
+        private void OpenGL_Window_Resize(object sender, EventArgs e)
         {
-            gl_window.RenderFrame(glControl1);
-
+            OpenGL_Window.DoResize();
         }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            totalTime += 0.01f;
-            gl_window.UpdateFrame((float)totalTime, glControl1.ClientSize.Width, glControl1.ClientSize.Height);
-            gl_window.RenderFrame(glControl1);
-            gl_window.UpdateFrame((float)totalTime + 100.0f, glControl1.ClientSize.Width, glControl1.ClientSize.Height);
-
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            timer1.Interval = 1000 / 60;
-            timer1.Start();
-        }
-
     }
 }

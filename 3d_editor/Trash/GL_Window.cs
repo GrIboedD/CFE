@@ -5,8 +5,10 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Graphics.OpenGL;
 using ErrorCode = OpenTK.Graphics.OpenGL.ErrorCode;
 using OpenTK.GLControl;
+using _3d_editor.Shaders;
+using _3d_editor.Textures;
 
-namespace _3d_editor
+namespace _3d_editor.Trash
 {
     class GL_Window
     {
