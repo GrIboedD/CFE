@@ -30,6 +30,7 @@
         {
             components = new System.ComponentModel.Container();
             OpenGL_Window = new OpenGL_Window(components);
+            timer = new System.Windows.Forms.Timer(components);
             SuspendLayout();
             // 
             // OpenGL_Window
@@ -49,6 +50,10 @@
             OpenGL_Window.Paint += OpenGL_Window_Paint;
             OpenGL_Window.Resize += OpenGL_Window_Resize;
             // 
+            // timer
+            // 
+            timer.Tick += Timer_Tick;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -57,10 +62,12 @@
             Controls.Add(OpenGL_Window);
             Name = "Form1";
             Text = "Form1";
+            Load += Form1_Load;
             ResumeLayout(false);
         }
 
         #endregion
         private OpenGL_Window OpenGL_Window;
+        private System.Windows.Forms.Timer timer;
     }
 }
