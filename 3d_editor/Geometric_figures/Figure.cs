@@ -15,7 +15,7 @@ namespace _3d_editor.Geometric_figures
 
         private bool _disposedValue = false;
 
-        public abstract void Update(int width, int height, float deltaTime);
+        public abstract void Update(int width, int height);
         public abstract void Draw();
 
         public void Dispose()

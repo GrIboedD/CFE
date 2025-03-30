@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Policy;
+using System.Windows.Forms.VisualStyles;
 using OpenTK.Mathematics;
 
 namespace _3d_editor.View
@@ -9,6 +10,8 @@ namespace _3d_editor.View
     {
         private Vector3 cameraPosition;
         private Vector3 cameraTarget;
+        private float pitch = 0;
+        private float yaw = 0;
 
         private enum Direction
         {
@@ -42,7 +45,11 @@ namespace _3d_editor.View
 
         public Matrix4 GetViewMatrix()
         {
-            return Matrix4.LookAt(cameraPosition, cameraTarget, Vector3.UnitY);
+            Matrix4 rotateXMatrix = Matrix4.CreateRotationX(pitch);
+            Matrix4 rotateYMatrix = Matrix4.CreateRotationY(yaw);
+            Vector4 newCameraPosition = new(cameraPosition, 1.0f);
+            newCameraPosition = rotateXMatrix * rotateYMatrix * newCameraPosition;
+            return Matrix4.LookAt(newCameraPosition.Xyz, cameraTarget, Vector3.UnitY);
         }
 
         private void MoveCamera(Direction direction, float value)
@@ -77,6 +84,19 @@ namespace _3d_editor.View
         public void MoveCameraForwardBackward(float value)
         {
             MoveCamera(Direction.ForwardBackward, value);
+        }
+
+        public void RotateCamera(float xValue, float yValue)
+        {
+
+            pitch += xValue;
+            yaw += yValue;
+
+            if (pitch < - float.Pi/4) pitch = float.Pi / 4;
+            if (pitch > float.Pi / 4) pitch = -float.Pi / 4;
+
+
+            Console.WriteLine($"{MathHelper.RadiansToDegrees((double)(pitch))}");
         }
     }
 }

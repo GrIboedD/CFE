@@ -53,6 +53,9 @@
             OpenGL_Window.KeyDown += OpenGL_Window_KeyDown;
             OpenGL_Window.KeyUp += OpenGL_Window_KeyUp;
             OpenGL_Window.Leave += OpenGL_Window_Leave;
+            OpenGL_Window.MouseDown += OpenGL_Window_MouseDown;
+            OpenGL_Window.MouseMove += OpenGL_Window_MouseMove;
+            OpenGL_Window.MouseUp += OpenGL_Window_MouseUp;
             OpenGL_Window.PreviewKeyDown += OpenGL_Window_PreviewKeyDown;
             OpenGL_Window.Resize += OpenGL_Window_Resize;
             // 

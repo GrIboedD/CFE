@@ -2,7 +2,9 @@
 using _3d_editor.View;
 using OpenTK.GLControl;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
 using System.ComponentModel;
+using System.Numerics;
 
 namespace _3d_editor
 {
@@ -10,6 +12,7 @@ namespace _3d_editor
     public partial class OpenGL_Window: GLControl
     {
         const float keySpeed = 0.001f;
+        const float mouseSensitivity = 0.0007f;
 
         private const string vertexPathSphere = "../../../Shaders/sphere.vert";
         private const string fragmentPathSphere = "../../../Shaders/sphere.frag";
@@ -24,6 +27,12 @@ namespace _3d_editor
         private bool isKeyDown = false;
         private bool isKeyLeft = false;
         private bool isKeyRight = false;
+
+        private bool isRightMouseDown = false;
+        private int lastMouseX = 0;
+        private int lastMouseY = 0;
+        private int currentMouseX = 0;
+        private int currentMouseY = 0;
 
 
         public OpenGL_Window() => InitializeComponent();
@@ -58,8 +67,10 @@ namespace _3d_editor
         {
             float deltaTime = (float)(DateTime.Now - lastCallTime).TotalMilliseconds;
             lastCallTime = DateTime.Now;
-            this.sphere.Update(width, height, deltaTime);
+            //this.sphere.Update(width, height, deltaTime);
+            this.sphere.Update(width, height);
             MoveCamera(deltaTime);
+            RotateCamera();
         }
 
         public void RenderFrame()
@@ -123,6 +134,38 @@ namespace _3d_editor
             if (isKeyDown) Camera.MoveCameraUpDown(keySpeed * deltaTime);
             if (isKeyRight) Camera.MoveCameraLeftRight(-keySpeed * deltaTime);
             if (isKeyLeft) Camera.MoveCameraLeftRight(keySpeed * deltaTime);
+        }
+
+        public void MouseDownProcessing(MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right) isRightMouseDown = true;
+            lastMouseX = e.X;
+            lastMouseY = e.Y;
+            currentMouseX = e.X;
+            currentMouseY = e.Y;
+        }
+
+        public void MouseUpProcessing(MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right) isRightMouseDown = false;
+        }
+
+        public void MouseMoveProcessing(MouseEventArgs e)
+        {
+            currentMouseX = e.X;
+            currentMouseY = e.Y;
+        }
+
+        private void RotateCamera()
+        {
+            if (!isRightMouseDown) return;
+
+            float deltaY = currentMouseX - lastMouseX;
+            //float deltaX = currentMouseY - lastMouseY;
+            float deltaX = 10;
+            Camera.RotateCamera(-deltaX * mouseSensitivity, deltaY * mouseSensitivity);
+            lastMouseX = currentMouseX;
+            lastMouseY = currentMouseY;
         }
 
     }

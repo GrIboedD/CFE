@@ -65,5 +65,20 @@ namespace _3d_editor
         {
             OpenGL_Window.KeyUpProcessing(e);
         }
+
+        private void OpenGL_Window_MouseDown(object sender, MouseEventArgs e)
+        {
+            OpenGL_Window.MouseDownProcessing(e);
+        }
+
+        private void OpenGL_Window_MouseUp(object sender, MouseEventArgs e)
+        {
+            OpenGL_Window.MouseUpProcessing(e);
+        }
+
+        private void OpenGL_Window_MouseMove(object sender, MouseEventArgs e)
+        {
+            OpenGL_Window.MouseMoveProcessing(e);
+        }
     }
 }
