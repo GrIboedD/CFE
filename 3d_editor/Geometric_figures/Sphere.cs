@@ -1,4 +1,5 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using _3d_editor.View;
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
 namespace _3d_editor.Geometric_figures
@@ -154,7 +155,7 @@ namespace _3d_editor.Geometric_figures
 
         private const int recursionLevel = 3;
 
-        public Sphere(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
+        public Sphere(string vertexPath, string fragmentPath, Camera Camera) : base(vertexPath, fragmentPath, Camera)
         {
 
             Geometry geometry = new(recursionLevel);
@@ -178,11 +179,11 @@ namespace _3d_editor.Geometric_figures
 
         }
 
-        public override void Update(int width, int height)
+        public override void Update(int width, int height, float deltaTime)
         {
             Matrix4 model = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(angle));
-            angle += 1.0f;
-            Matrix4 view = Matrix4.CreateTranslation(0.0f, 0.0f, -3.0f);
+            angle += 0.01f * deltaTime;
+            Matrix4 view = Camera.GetViewMatrix();
             Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 4.0f, width / (float)height, 0.1f, 100.0f);
             this.Shader.SetMatrix4("model", model);
             this.Shader.SetMatrix4("view", view);

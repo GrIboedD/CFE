@@ -47,7 +47,13 @@
             OpenGL_Window.Size = new Size(1017, 640);
             OpenGL_Window.TabIndex = 1;
             OpenGL_Window.Load += OpenGL_Window_Load;
+            OpenGL_Window.Click += OpenGL_Window_Click;
             OpenGL_Window.Paint += OpenGL_Window_Paint;
+            OpenGL_Window.Enter += OpenGL_Window_Enter;
+            OpenGL_Window.KeyDown += OpenGL_Window_KeyDown;
+            OpenGL_Window.KeyUp += OpenGL_Window_KeyUp;
+            OpenGL_Window.Leave += OpenGL_Window_Leave;
+            OpenGL_Window.PreviewKeyDown += OpenGL_Window_PreviewKeyDown;
             OpenGL_Window.Resize += OpenGL_Window_Resize;
             // 
             // timer

@@ -18,7 +18,7 @@ namespace _3d_editor
             OpenGL_Window.UpdateFrame(OpenGL_Window.ClientSize.Width, OpenGL_Window.ClientSize.Height);
             OpenGL_Window.RenderFrame();
         }
-       
+
         private void OpenGL_Window_Resize(object sender, EventArgs e)
         {
             OpenGL_Window.DoResize();
@@ -34,6 +34,36 @@ namespace _3d_editor
         {
             OpenGL_Window.UpdateFrame(OpenGL_Window.ClientSize.Width, OpenGL_Window.ClientSize.Height);
             OpenGL_Window.RenderFrame();
+        }
+
+        private void OpenGL_Window_Enter(object sender, EventArgs e)
+        {
+            Console.WriteLine("Focus in");
+        }
+
+        private void OpenGL_Window_Leave(object sender, EventArgs e)
+        {
+            Console.WriteLine("Focus out");
+        }
+
+        private void OpenGL_Window_Click(object sender, EventArgs e)
+        {
+            OpenGL_Window.Focus();
+        }
+
+        private void OpenGL_Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            OpenGL_Window.KeyDownProcessing(e);
+        }
+
+        private void OpenGL_Window_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            e.IsInputKey = true;
+        }
+
+        private void OpenGL_Window_KeyUp(object sender, KeyEventArgs e)
+        {
+            OpenGL_Window.KeyUpProcessing(e);
         }
     }
 }
