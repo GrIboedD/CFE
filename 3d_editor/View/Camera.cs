@@ -10,8 +10,6 @@ namespace _3d_editor.View
     {
         private Vector3 cameraPosition;
         private Vector3 cameraTarget;
-        private float pitch = 0;
-        private float yaw = 0;
 
         private enum Direction
         {
@@ -45,11 +43,7 @@ namespace _3d_editor.View
 
         public Matrix4 GetViewMatrix()
         {
-            Matrix4 rotateXMatrix = Matrix4.CreateRotationX(pitch);
-            Matrix4 rotateYMatrix = Matrix4.CreateRotationY(yaw);
-            Vector4 newCameraPosition = new(cameraPosition, 1.0f);
-            newCameraPosition = rotateXMatrix * rotateYMatrix * newCameraPosition;
-            return Matrix4.LookAt(newCameraPosition.Xyz, cameraTarget, Vector3.UnitY);
+            return Matrix4.LookAt(cameraPosition, cameraTarget, Vector3.UnitY);
         }
 
         private void MoveCamera(Direction direction, float value)
@@ -89,14 +83,12 @@ namespace _3d_editor.View
         public void RotateCamera(float xValue, float yValue)
         {
 
-            pitch += xValue;
-            yaw += yValue;
+            Matrix4 rotateXMatrix = Matrix4.CreateRotationX(xValue);
+            Matrix4 rotateYMatrix = Matrix4.CreateRotationY(yValue);
+            Vector4 newCameraPosition = new(cameraPosition, 1.0f);
+            newCameraPosition = rotateXMatrix * rotateYMatrix * newCameraPosition;
+            cameraPosition = newCameraPosition.Xyz;
 
-            if (pitch < - float.Pi/4) pitch = float.Pi / 4;
-            if (pitch > float.Pi / 4) pitch = -float.Pi / 4;
-
-
-            Console.WriteLine($"{MathHelper.RadiansToDegrees((double)(pitch))}");
         }
     }
 }

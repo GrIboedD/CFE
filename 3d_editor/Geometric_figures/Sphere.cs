@@ -151,9 +151,7 @@ namespace _3d_editor.Geometric_figures
         private float[] Vertices { get; init; }
         private uint[] Indices { get; init; }
 
-        private float angle = 0.0f;
-
-        private const int recursionLevel = 3;
+        private const int recursionLevel = 0;
 
         public Sphere(string vertexPath, string fragmentPath, Camera Camera) : base(vertexPath, fragmentPath, Camera)
         {

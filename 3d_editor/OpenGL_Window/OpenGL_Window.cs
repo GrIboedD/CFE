@@ -11,7 +11,7 @@ namespace _3d_editor
     [ToolboxItem(true)]
     public partial class OpenGL_Window: GLControl
     {
-        const float keySpeed = 0.001f;
+        const float keySpeed = 0.01f;
         const float mouseSensitivity = 0.0007f;
 
         private const string vertexPathSphere = "../../../Shaders/sphere.vert";
@@ -160,12 +160,15 @@ namespace _3d_editor
         {
             if (!isRightMouseDown) return;
 
-            float deltaY = currentMouseX - lastMouseX;
+            //float deltaY = currentMouseX - lastMouseX;
             //float deltaX = currentMouseY - lastMouseY;
-            float deltaX = 10;
+            float deltaX = 100;
+            float deltaY = 100;
             Camera.RotateCamera(-deltaX * mouseSensitivity, deltaY * mouseSensitivity);
             lastMouseX = currentMouseX;
             lastMouseY = currentMouseY;
+
+
         }
 
     }
