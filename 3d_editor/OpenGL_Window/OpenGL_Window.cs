@@ -4,15 +4,14 @@ using OpenTK.GLControl;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using System.ComponentModel;
-using System.Numerics;
 
 namespace _3d_editor
 {
     [ToolboxItem(true)]
     public partial class OpenGL_Window: GLControl
     {
-        const float keySpeed = 0.01f;
-        const float mouseSensitivity = 0.0007f;
+        const float keySpeed = 0.001f;
+        const float mouseSensitivity = 0.007f;
 
         private const string vertexPathSphere = "../../../Shaders/sphere.vert";
         private const string fragmentPathSphere = "../../../Shaders/sphere.frag";
@@ -130,10 +129,14 @@ namespace _3d_editor
 
         private void MoveCamera(float deltaTime)
         {
-            if (isKeyUp) Camera.MoveCameraUpDown(-keySpeed * deltaTime);
-            if (isKeyDown) Camera.MoveCameraUpDown(keySpeed * deltaTime);
-            if (isKeyRight) Camera.MoveCameraLeftRight(-keySpeed * deltaTime);
-            if (isKeyLeft) Camera.MoveCameraLeftRight(keySpeed * deltaTime);
+            //if (isKeyUp) Camera.MoveCameraUpDown(-keySpeed * deltaTime);
+            //if (isKeyDown) Camera.MoveCameraUpDown(keySpeed * deltaTime);
+            //if (isKeyRight) Camera.MoveCameraLeftRight(-keySpeed * deltaTime);
+            //if (isKeyLeft) Camera.MoveCameraLeftRight(keySpeed * deltaTime);
+            //if (isKeyUp) Camera.Pan(new Vector3(0, -keySpeed * deltaTime, 0));
+            //if (isKeyDown) Camera.Pan(new Vector3(0, keySpeed * deltaTime, 0));
+            //if (isKeyRight) Camera.Pan(new Vector3(-keySpeed * deltaTime, 0, 0));
+            //if (isKeyLeft) Camera.Pan(new Vector3(keySpeed * deltaTime, 0, 0));
         }
 
         public void MouseDownProcessing(MouseEventArgs e)
@@ -160,14 +163,11 @@ namespace _3d_editor
         {
             if (!isRightMouseDown) return;
 
-            //float deltaY = currentMouseX - lastMouseX;
-            //float deltaX = currentMouseY - lastMouseY;
-            float deltaX = 100;
-            float deltaY = 100;
-            Camera.RotateCamera(-deltaX * mouseSensitivity, deltaY * mouseSensitivity);
+            float deltaY = currentMouseX - lastMouseX;
+            float deltaX = currentMouseY - lastMouseY;
+            Camera.RotateCamera(-deltaX * mouseSensitivity, -deltaY * mouseSensitivity);
             lastMouseX = currentMouseX;
             lastMouseY = currentMouseY;
-
 
         }
 

@@ -179,7 +179,7 @@ namespace _3d_editor.Geometric_figures
 
         public override void Update(int width, int height)
         {
-            Matrix4 model = Matrix4.CreateScale(1);
+            Matrix4 model = Matrix4.Identity;
             Matrix4 view = Camera.GetViewMatrix();
             Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 4.0f, width / (float)height, 0.1f, 100.0f);
             this.Shader.SetMatrix4("model", model);

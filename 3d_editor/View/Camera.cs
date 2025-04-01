@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Security.Policy;
 using System.Windows.Forms.VisualStyles;
 using OpenTK.Mathematics;
@@ -8,87 +9,48 @@ namespace _3d_editor.View
 {
     public class Camera
     {
-        private Vector3 cameraPosition;
-        private Vector3 cameraTarget;
-
-        private enum Direction
-        {
-            UpDown,
-            LeftRight,
-            ForwardBackward
-        }
-
-        public Camera(float[] cameraPosition, float[] cameraTarget)
-        {
-            this.cameraPosition = new(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
-            this.cameraTarget = new(cameraTarget[0], cameraTarget[1], cameraTarget[2]);
-        }
+     
+        Matrix4 viewMatrix;
+        Matrix4 scaleMatrix;
+        Matrix4 cameraPositionMatrix;
+        Matrix4 rotateMatrix;
+        Matrix4 targetPositionMartix;
 
         public Camera()
         {
-            this.cameraPosition = new(0, 0, -3.0f);
-            this.cameraTarget = new(0, 0, 0);
-        }
+            var cameraPosition = new Vector3(0, 0, 5);
+            var cameraTarget = new Vector3(0, 0, 0);
 
-        public void SetCameraPosition(float x, float y, float z)
-        {
-            cameraPosition = new Vector3(x, y, z);
+            scaleMatrix = Matrix4.Identity;
+            cameraPositionMatrix = Matrix4.CreateTranslation(cameraPosition);
+            rotateMatrix = Matrix4.CreateFromQuaternion(Quaternion.Identity);
+            targetPositionMartix = Matrix4.CreateTranslation(cameraTarget);
+            CalculateViewMatrix();
         }
-
-        public void SetCameraTarget(float x, float y, float z)
-        {
-            cameraTarget = new Vector3(x, y, z);
-        }
-
 
         public Matrix4 GetViewMatrix()
         {
-            return Matrix4.LookAt(cameraPosition, cameraTarget, Vector3.UnitY);
+            return viewMatrix;
         }
 
-        private void MoveCamera(Direction direction, float value)
+        private void CalculateViewMatrix()
         {
-            Vector3 cameraDirection = Vector3.Normalize(cameraPosition - cameraTarget);
-            Vector3 move;
-            if (direction == Direction.ForwardBackward)
-            {
-                move = -cameraDirection * value;
-            }
-            else
-            {
-                bool isUpDown = direction == Direction.UpDown;
-                Vector3 vector = isUpDown ? -Vector3.UnitX : -Vector3.UnitY;
-                move = Vector3.Normalize(Vector3.Cross(cameraDirection, vector)) * value;
-            }
-
-            cameraPosition += move;
-            cameraTarget += move;
-        }
-
-        public void MoveCameraUpDown(float value)
-        {
-            MoveCamera(Direction.UpDown, value);
-        }
-
-        public void MoveCameraLeftRight(float value)
-        {
-            MoveCamera(Direction.LeftRight, value);
-        }
-
-        public void MoveCameraForwardBackward(float value)
-        {
-            MoveCamera(Direction.ForwardBackward, value);
+           viewMatrix = Matrix4.Invert(scaleMatrix * cameraPositionMatrix * rotateMatrix * targetPositionMartix);
         }
 
         public void RotateCamera(float xValue, float yValue)
         {
+            var cameraTransformMatrix = Matrix4.Invert(viewMatrix);
+            var cameraFront = new Vector3(cameraTransformMatrix[2, 0], cameraTransformMatrix[2, 1], cameraTransformMatrix[2, 2]);
+            var cameraUp = new Vector3(cameraTransformMatrix[1, 0], cameraTransformMatrix[1, 1], cameraTransformMatrix[1, 2]);
+            var cameraRight = new Vector3(cameraTransformMatrix[0, 0], cameraTransformMatrix[0, 1], cameraTransformMatrix[0, 2]);
 
-            Matrix4 rotateXMatrix = Matrix4.CreateRotationX(xValue);
-            Matrix4 rotateYMatrix = Matrix4.CreateRotationY(yValue);
-            Vector4 newCameraPosition = new(cameraPosition, 1.0f);
-            newCameraPosition = rotateXMatrix * rotateYMatrix * newCameraPosition;
-            cameraPosition = newCameraPosition.Xyz;
 
+            var rotatorX = Quaternion.FromAxisAngle(cameraRight, xValue);
+            var rotatorY = Quaternion.FromAxisAngle(cameraUp, yValue);
+
+            rotateMatrix *= Matrix4.CreateFromQuaternion(Quaternion.Add(rotatorX, rotatorY));
+            CalculateViewMatrix();
         }
     }
 }
