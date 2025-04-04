@@ -11,6 +11,7 @@ namespace _3d_editor
         private void OpenGL_Window_Load(object sender, EventArgs e)
         {
             OpenGL_Window.DoLoad();
+            OpenGL_Window.MouseWheel += OpenGL_Window_MouseWheel;
         }
 
         private void OpenGL_Window_Paint(object sender, PaintEventArgs e)
@@ -79,6 +80,11 @@ namespace _3d_editor
         private void OpenGL_Window_MouseMove(object sender, MouseEventArgs e)
         {
             OpenGL_Window.MouseMoveProcessing(e);
+        }
+
+        private void OpenGL_Window_MouseWheel(object sender, MouseEventArgs e)
+        {
+            OpenGL_Window.MouseWheelProcessing(e);
         }
     }
 }

@@ -35,21 +35,33 @@ namespace _3d_editor.View
 
         private void CalculateViewMatrix()
         {
-           viewMatrix = Matrix4.Invert(scaleMatrix * cameraPositionMatrix * rotateMatrix * targetPositionMartix);
+           viewMatrix = scaleMatrix * Matrix4.Invert(cameraPositionMatrix * rotateMatrix * targetPositionMartix);
         }
 
-        public void RotateCamera(float xValue, float yValue)
+        public void RotateCamera(float pitch = 0.0f, float yaw = 0.0f, float roll = 0.0f)
         {
             var cameraTransformMatrix = Matrix4.Invert(viewMatrix);
             var cameraFront = new Vector3(cameraTransformMatrix[2, 0], cameraTransformMatrix[2, 1], cameraTransformMatrix[2, 2]);
             var cameraUp = new Vector3(cameraTransformMatrix[1, 0], cameraTransformMatrix[1, 1], cameraTransformMatrix[1, 2]);
             var cameraRight = new Vector3(cameraTransformMatrix[0, 0], cameraTransformMatrix[0, 1], cameraTransformMatrix[0, 2]);
 
+            var rotatorX = Quaternion.FromAxisAngle(cameraRight, pitch);
+            var rotatorY = Quaternion.FromAxisAngle(cameraUp, yaw);
+            var rotatorZ = Quaternion.FromAxisAngle(cameraFront, roll);
 
-            var rotatorX = Quaternion.FromAxisAngle(cameraRight, xValue);
-            var rotatorY = Quaternion.FromAxisAngle(cameraUp, yValue);
+            rotateMatrix *= Matrix4.CreateFromQuaternion(Quaternion.Add(Quaternion.Add(rotatorX, rotatorY), rotatorZ));
+            CalculateViewMatrix();
+        }
 
-            rotateMatrix *= Matrix4.CreateFromQuaternion(Quaternion.Add(rotatorX, rotatorY));
+        public void MoveCamera(float upDown = 0.0f, float leftRight = 0.0f, float backForward = 0.0f)
+        {
+            cameraPositionMatrix *= Matrix4.CreateTranslation(leftRight, upDown, backForward);
+            CalculateViewMatrix();
+        }
+
+        public void SetZoom(float zoomFactor)
+        {
+            scaleMatrix = Matrix4.CreateScale(zoomFactor, zoomFactor, zoomFactor);
             CalculateViewMatrix();
         }
     }

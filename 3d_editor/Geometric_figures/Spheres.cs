@@ -1,11 +1,13 @@
-﻿using _3d_editor.View;
+﻿using _3d_editor.Shaders;
+using _3d_editor.Textures;
+using _3d_editor.View;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
 namespace _3d_editor.Geometric_figures
 {
 
-    class Sphere : Figure
+    class Spheres : Figure
     {
 
         private class Geometry
@@ -121,6 +123,14 @@ namespace _3d_editor.Geometric_figures
 
             }
                 
+            private Vector2 GetTextureCoordinates(Vector3 vertex)
+            {
+
+                float u = (float)(Math.Asin(vertex.X) / Math.PI + 0.5f);
+                float v = (float)(Math.Asin(vertex.Y) / Math.PI + 0.5f);
+                return new Vector2(u, v);
+            }
+
             public float[] GetVertices()
             {
                 List<float> outVertices = [];
@@ -129,6 +139,9 @@ namespace _3d_editor.Geometric_figures
                     outVertices.Add(vertex.X);
                     outVertices.Add(vertex.Y);
                     outVertices.Add(vertex.Z);
+                    Vector2 textureCoord = GetTextureCoordinates(vertex);
+                    outVertices.Add(textureCoord.X);
+                    outVertices.Add(textureCoord.Y);
                 }
                 return [.. outVertices];
             }
@@ -147,13 +160,51 @@ namespace _3d_editor.Geometric_figures
 
         }
 
+        private class Sphere(float x, float y, float z, float radius)
+        {
+            private Vector3 position = new(x, y, z);
+            private float radius = radius;
+            private Matrix4 modelMatrix = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(x, y, z);
+
+            private void CalculateModelMatrix()
+            {
+                modelMatrix = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(position);
+            }
+
+            public void SetPosition(float x, float y, float z)
+            {
+                position = new(x, y, z);
+                CalculateModelMatrix();
+            }
+
+            public void SetRadius(float radius)
+            {
+                this.radius = radius;
+                CalculateModelMatrix();
+            }
+
+            public Matrix4 GetModelMatrix()
+            {
+                return modelMatrix;
+            }
+        }
 
         private float[] Vertices { get; init; }
         private uint[] Indices { get; init; }
 
         private const int recursionLevel = 0;
 
-        public Sphere(string vertexPath, string fragmentPath, Camera Camera) : base(vertexPath, fragmentPath, Camera)
+        private readonly List<Sphere> SpheresList = [];
+
+        private readonly Texture texture = new("D:\\c#projects\\CFE\\3d_editor\\awesomeface.png");
+
+        public void CreateNewSphere(float x, float y, float z, float radius)
+        {
+            var sphere = new Sphere(x, y, z, radius);
+            SpheresList.Add(sphere);
+        }
+
+        public Spheres(string vertexPath, string fragmentPath, Camera Camera) : base(vertexPath, fragmentPath, Camera)
         {
 
             Geometry geometry = new(recursionLevel);
@@ -172,28 +223,38 @@ namespace _3d_editor.Geometric_figures
 
             int vertexLocation = this.Shader.GetAttribLocation("aPos");
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false,
-                3 * sizeof(float), 0);
+                5 * sizeof(float), 0);
             GL.EnableVertexAttribArray(vertexLocation);
+
+            int texCoordLocation = this.Shader.GetAttribLocation("aTexCoord");
+            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false,
+                5 * sizeof(float), 3 * sizeof(float));
+            GL.EnableVertexAttribArray(texCoordLocation);
 
         }
 
         public override void Update(int width, int height)
         {
-            Matrix4 model = Matrix4.Identity;
             Matrix4 view = Camera.GetViewMatrix();
             Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 4.0f, width / (float)height, 0.1f, 100.0f);
-            this.Shader.SetMatrix4("model", model);
             this.Shader.SetMatrix4("view", view);
             this.Shader.SetMatrix4("projection", projection);
-
         }
 
         public override void Draw()
         {
+            if (SpheresList.Count == 0) return;
+
+            this.texture.Use();
             this.Shader.Use();
             GL.Enable(EnableCap.CullFace);
-            GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
-            GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            //GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
+
+            foreach (var sphere in SpheresList)
+            {
+                Shader.SetMatrix4("model", sphere.GetModelMatrix());
+                GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            }
         }
     }
 }

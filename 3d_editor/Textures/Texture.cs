@@ -6,7 +6,7 @@ namespace _3d_editor.Textures
 {
     class Texture
     {
-        int Handle;
+        private int Handle { get; init; }
 
         public Texture(string path_to_texture)
         {

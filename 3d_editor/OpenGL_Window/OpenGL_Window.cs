@@ -10,29 +10,36 @@ namespace _3d_editor
     [ToolboxItem(true)]
     public partial class OpenGL_Window: GLControl
     {
-        const float keySpeed = 0.001f;
+        const float keySpeed = 0.01f;
         const float mouseSensitivity = 0.007f;
+        const float zoomFactorSensitivity = 0.05f;
 
         private const string vertexPathSphere = "../../../Shaders/sphere.vert";
         private const string fragmentPathSphere = "../../../Shaders/sphere.frag";
 
         private readonly Camera Camera = new();
 
-        Sphere sphere;
+        Spheres spheres;
 
         private DateTime lastCallTime = DateTime.Now;
 
-        private bool isKeyUp = false;
-        private bool isKeyDown = false;
-        private bool isKeyLeft = false;
-        private bool isKeyRight = false;
 
-        private bool isRightMouseDown = false;
+        private readonly Dictionary<string, bool> keyStates = new()
+        {
+            {"up", false },
+            {"down", false },
+            {"left", false },
+            {"right", false },
+            {"rightMouse", false },
+        };
+
+
         private int lastMouseX = 0;
         private int lastMouseY = 0;
         private int currentMouseX = 0;
         private int currentMouseY = 0;
 
+        private float zoomFactor = 1;
 
         public OpenGL_Window() => InitializeComponent();
 
@@ -47,7 +54,9 @@ namespace _3d_editor
         {
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             GL.Enable(EnableCap.DepthTest);
-            this.sphere = new Sphere(vertexPathSphere, fragmentPathSphere, Camera);
+            this.spheres = new Spheres(vertexPathSphere, fragmentPathSphere, Camera);
+            this.spheres.CreateNewSphere(2, 0, 0, 1f);
+            this.spheres.CreateNewSphere(-2, 0, 0, 0.5f);
         }
 
         public void DoResize()
@@ -66,17 +75,19 @@ namespace _3d_editor
         {
             float deltaTime = (float)(DateTime.Now - lastCallTime).TotalMilliseconds;
             lastCallTime = DateTime.Now;
-            //this.sphere.Update(width, height, deltaTime);
-            this.sphere.Update(width, height);
+
+            this.spheres.Update(width, height);
+
             MoveCamera(deltaTime);
             RotateCamera();
+            SetCameraZoom();
         }
 
         public void RenderFrame()
         {
             this.MakeCurrent();
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            this.sphere.Draw();
+            this.spheres.Draw();
             this.SwapBuffers();
         }
 
@@ -85,20 +96,20 @@ namespace _3d_editor
             switch (e.KeyCode)
             {
                 case Keys.Up:
-                    isKeyDown = false;
-                    isKeyUp = true;
+                    keyStates["down"] = false;
+                    keyStates["up"] = true;
                     break;
                 case Keys.Down:
-                    isKeyUp = false;
-                    isKeyDown = true;
+                    keyStates["up"] = false;
+                    keyStates["down"] = true;
                     break;
                 case Keys.Left:
-                    isKeyRight = false;
-                    isKeyLeft = true;
+                    keyStates["right"] = false;
+                    keyStates["left"] = true;
                     break;
                 case Keys.Right:
-                    isKeyLeft = false;
-                    isKeyRight = true;
+                    keyStates["left"] = false;
+                    keyStates["right"] = true;
                     break;
                 default:
                     break;
@@ -111,16 +122,16 @@ namespace _3d_editor
             switch (e.KeyCode)
             {
                 case Keys.Up:
-                    isKeyUp = false;
+                    keyStates["up"] = false;
                     break;
                 case Keys.Down:
-                    isKeyDown = false;
+                    keyStates["down"] = false;
                     break;
                 case Keys.Left:
-                    isKeyLeft = false;
+                    keyStates["left"] = false;
                     break;
                 case Keys.Right:
-                    isKeyRight = false;
+                    keyStates["right"] = false;
                     break;
                 default:
                     break;
@@ -129,19 +140,16 @@ namespace _3d_editor
 
         private void MoveCamera(float deltaTime)
         {
-            //if (isKeyUp) Camera.MoveCameraUpDown(-keySpeed * deltaTime);
-            //if (isKeyDown) Camera.MoveCameraUpDown(keySpeed * deltaTime);
-            //if (isKeyRight) Camera.MoveCameraLeftRight(-keySpeed * deltaTime);
-            //if (isKeyLeft) Camera.MoveCameraLeftRight(keySpeed * deltaTime);
-            //if (isKeyUp) Camera.Pan(new Vector3(0, -keySpeed * deltaTime, 0));
-            //if (isKeyDown) Camera.Pan(new Vector3(0, keySpeed * deltaTime, 0));
-            //if (isKeyRight) Camera.Pan(new Vector3(-keySpeed * deltaTime, 0, 0));
-            //if (isKeyLeft) Camera.Pan(new Vector3(keySpeed * deltaTime, 0, 0));
+            if (keyStates["up"]) Camera.MoveCamera(upDown: -keySpeed * deltaTime);
+            if (keyStates["down"]) Camera.MoveCamera(upDown: keySpeed * deltaTime);
+            if (keyStates["right"]) Camera.MoveCamera(leftRight: -keySpeed * deltaTime);
+            if (keyStates["left"]) Camera.MoveCamera(leftRight: keySpeed * deltaTime);
+
         }
 
         public void MouseDownProcessing(MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right) isRightMouseDown = true;
+            if (e.Button == MouseButtons.Right) keyStates["rightMouse"] = true;
             lastMouseX = e.X;
             lastMouseY = e.Y;
             currentMouseX = e.X;
@@ -150,7 +158,7 @@ namespace _3d_editor
 
         public void MouseUpProcessing(MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right) isRightMouseDown = false;
+            if (e.Button == MouseButtons.Right) keyStates["rightMouse"] = false;
         }
 
         public void MouseMoveProcessing(MouseEventArgs e)
@@ -161,15 +169,24 @@ namespace _3d_editor
 
         private void RotateCamera()
         {
-            if (!isRightMouseDown) return;
+            if (!keyStates["rightMouse"]) return;
 
             float deltaY = currentMouseX - lastMouseX;
             float deltaX = currentMouseY - lastMouseY;
-            Camera.RotateCamera(-deltaX * mouseSensitivity, -deltaY * mouseSensitivity);
+            Camera.RotateCamera(pitch: -deltaX * mouseSensitivity, yaw: -deltaY * mouseSensitivity);
             lastMouseX = currentMouseX;
             lastMouseY = currentMouseY;
-
         }
 
+        public void MouseWheelProcessing(MouseEventArgs e)
+        {
+            if (e.Delta > 0) zoomFactor += zoomFactorSensitivity;
+            else zoomFactor -= zoomFactorSensitivity;
+        }
+
+        private void SetCameraZoom()
+        {
+            Camera.SetZoom(zoomFactor);
+        }
     }
 }
