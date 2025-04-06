@@ -19,6 +19,8 @@ namespace _3d_editor
 
         private readonly Camera Camera = new();
 
+        private Matrix4 projectionMatrix;
+
         Spheres spheres;
 
         private DateTime lastCallTime = DateTime.Now;
@@ -50,11 +52,16 @@ namespace _3d_editor
             InitializeComponent();
         }
 
+        private void UpdateProjectionMatrix() => projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 4, ClientSize.Width / (float)ClientSize.Height, 0.1f, 100);
+
         public void DoLoad()
         {
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             GL.Enable(EnableCap.DepthTest);
-            this.spheres = new Spheres(vertexPathSphere, fragmentPathSphere, Camera);
+
+            UpdateProjectionMatrix();
+
+            this.spheres = new Spheres(vertexPathSphere, fragmentPathSphere);
             this.spheres.CreateNewSphere(2, 0, 0, 1f);
             this.spheres.CreateNewSphere(-2, 0, 0, 0.5f);
         }
@@ -67,16 +74,17 @@ namespace _3d_editor
                 this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, 1);
 
             GL.Viewport(0, 0, this.ClientSize.Width, this.ClientSize.Height);
+            UpdateProjectionMatrix();
         }
 
 
 
-        public void UpdateFrame(int width, int height)
+        public void UpdateFrame()
         {
             float deltaTime = (float)(DateTime.Now - lastCallTime).TotalMilliseconds;
             lastCallTime = DateTime.Now;
 
-            this.spheres.Update(width, height);
+            this.spheres.Update(projectionMatrix, Camera.GetViewMatrix());
 
             MoveCamera(deltaTime);
             RotateCamera();
@@ -154,6 +162,8 @@ namespace _3d_editor
             lastMouseY = e.Y;
             currentMouseX = e.X;
             currentMouseY = e.Y;
+
+            if (e.Button == MouseButtons.Left) spheres.ClickOnObject(e.X, e.Y, this.ClientSize.Width, this.ClientSize.Height);
         }
 
         public void MouseUpProcessing(MouseEventArgs e)

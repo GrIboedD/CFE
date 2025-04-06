@@ -151,24 +151,25 @@ namespace _3d_editor.Geometric_figures
 
         private class Sphere(float x, float y, float z, float radius)
         {
-            private Vector3 position = new(x, y, z);
-            private float radius = radius;
+            public Vector3 Position { get; private set; } = new(x, y, z);
+            public float Radius { get; private set; } = radius;
+
             private Matrix4 modelMatrix = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(x, y, z);
 
             private void CalculateModelMatrix()
             {
-                modelMatrix = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(position);
+                modelMatrix = Matrix4.CreateScale(Radius) * Matrix4.CreateTranslation(Position);
             }
 
             public void SetPosition(float x, float y, float z)
             {
-                position = new(x, y, z);
+                Position = new(x, y, z);
                 CalculateModelMatrix();
             }
 
             public void SetRadius(float radius)
             {
-                this.radius = radius;
+                this.Radius = radius;
                 CalculateModelMatrix();
             }
 
@@ -193,7 +194,7 @@ namespace _3d_editor.Geometric_figures
             SpheresList.Add(sphere);
         }
 
-        public Spheres(string vertexPath, string fragmentPath, Camera Camera) : base(vertexPath, fragmentPath, Camera)
+        public Spheres(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
         {
 
             Geometry geometry = new(recursionLevel);
@@ -216,12 +217,10 @@ namespace _3d_editor.Geometric_figures
             GL.EnableVertexAttribArray(vertexLocation);
         }
 
-        public override void Update(int width, int height)
+        public override void Update(Matrix4 projectionMatrix, Matrix4 viewMatrix)
         {
-            Matrix4 view = Camera.GetViewMatrix();
-            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 4.0f, width / (float)height, 0.1f, 100.0f);
-            this.Shader.SetMatrix4("view", view);
-            this.Shader.SetMatrix4("projection", projection);
+            this.Shader.SetMatrix4("view", viewMatrix);
+            this.Shader.SetMatrix4("projection", projectionMatrix);
         }
         
         public override void Draw()
@@ -231,7 +230,6 @@ namespace _3d_editor.Geometric_figures
             this.texture.Use();
             this.Shader.Use();
             GL.Enable(EnableCap.CullFace);
-            //GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
 
             foreach (var sphere in SpheresList)
             {
@@ -239,6 +237,26 @@ namespace _3d_editor.Geometric_figures
                 Shader.SetMatrix4("model", sphere.GetModelMatrix());
                 GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
             }
+        }
+
+        public  void ClickOnObject(int mouseX, int mouseY, int width, int height)
+        {
+            //float x = (2 * mouseX) / width - 1;
+            //float y = 1 - (2 * mouseY) / height;
+            //Vector4 rayClip = (x, y, -1, 1);
+            //Vector4 rayEye = Matrix4.Invert(projectionMatrix) * rayClip;
+            //rayEye = new Vector4(rayEye.X, rayEye.Y, -1, 0);
+            //Vector3 rayWor = (Matrix4.Invert(Camera.GetViewMatrix()) * rayEye).Xyz;
+
+            //Vector3 rayDirection = Vector3.Normalize(rayWor);
+            //Vector3 rayOrigin = Camera.getCameraPositionVector();
+            //Console.WriteLine("O: " + rayOrigin.ToString());
+            //Console.WriteLine("D: " + rayDirection.ToString());
+            //foreach (var sphere in SpheresList)
+            //{
+            //    Vector3 center = sphere.position;
+            //    float r = sphere.radius;
+            //}
         }
     }
 }
