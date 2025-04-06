@@ -122,14 +122,6 @@ namespace _3d_editor.Geometric_figures
                 indices = faces;
 
             }
-                
-            private Vector2 GetTextureCoordinates(Vector3 vertex)
-            {
-
-                float u = (float)(Math.Asin(vertex.X) / Math.PI + 0.5f);
-                float v = (float)(Math.Asin(vertex.Y) / Math.PI + 0.5f);
-                return new Vector2(u, v);
-            }
 
             public float[] GetVertices()
             {
@@ -139,9 +131,6 @@ namespace _3d_editor.Geometric_figures
                     outVertices.Add(vertex.X);
                     outVertices.Add(vertex.Y);
                     outVertices.Add(vertex.Z);
-                    Vector2 textureCoord = GetTextureCoordinates(vertex);
-                    outVertices.Add(textureCoord.X);
-                    outVertices.Add(textureCoord.Y);
                 }
                 return [.. outVertices];
             }
@@ -192,7 +181,7 @@ namespace _3d_editor.Geometric_figures
         private float[] Vertices { get; init; }
         private uint[] Indices { get; init; }
 
-        private const int recursionLevel = 3;
+        private const int recursionLevel = 5;
 
         private readonly List<Sphere> SpheresList = [];
 
@@ -223,14 +212,8 @@ namespace _3d_editor.Geometric_figures
 
             int vertexLocation = this.Shader.GetAttribLocation("aPos");
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false,
-                5 * sizeof(float), 0);
+                3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(vertexLocation);
-
-            int texCoordLocation = this.Shader.GetAttribLocation("aTexCoord");
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false,
-                5 * sizeof(float), 3 * sizeof(float));
-            GL.EnableVertexAttribArray(texCoordLocation);
-
         }
 
         public override void Update(int width, int height)
@@ -240,7 +223,7 @@ namespace _3d_editor.Geometric_figures
             this.Shader.SetMatrix4("view", view);
             this.Shader.SetMatrix4("projection", projection);
         }
-
+        
         public override void Draw()
         {
             if (SpheresList.Count == 0) return;
