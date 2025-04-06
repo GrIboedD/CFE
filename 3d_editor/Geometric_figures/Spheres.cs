@@ -192,11 +192,11 @@ namespace _3d_editor.Geometric_figures
         private float[] Vertices { get; init; }
         private uint[] Indices { get; init; }
 
-        private const int recursionLevel = 0;
+        private const int recursionLevel = 3;
 
         private readonly List<Sphere> SpheresList = [];
 
-        private readonly Texture texture = new("D:\\c#projects\\CFE\\3d_editor\\awesomeface.png");
+        private readonly Texture texture = new("D:\\c#projects\\CFE\\3d_editor\\Textures\\Images\\H.png");
 
         public void CreateNewSphere(float x, float y, float z, float radius)
         {
@@ -252,6 +252,7 @@ namespace _3d_editor.Geometric_figures
 
             foreach (var sphere in SpheresList)
             {
+                Shader.SetVec4("color", new Vector4(0.8f, 0, 0, 1));
                 Shader.SetMatrix4("model", sphere.GetModelMatrix());
                 GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
             }

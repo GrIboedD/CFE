@@ -88,6 +88,13 @@ namespace _3d_editor.Shaders
             int location = GL.GetUniformLocation(Handle, name);
             GL.UniformMatrix4(location, true, ref matrix);
         }
+
+        public void SetVec4(string name, Vector4 vector)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform4(location, vector);
+        }
+
         public void Dispose()
         {
             Dispose(true);
