@@ -149,12 +149,14 @@ namespace _3d_editor.Geometric_figures
 
         }
 
-        private class Sphere(float x, float y, float z, float radius)
+        private class Sphere(Vector3 position, float radius, Vector4 color)
         {
-            public Vector3 Position { get; private set; } = new(x, y, z);
+            public Vector3 Position { get; private set; } = position;
             public float Radius { get; private set; } = radius;
 
-            private Matrix4 modelMatrix = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(x, y, z);
+            public Vector4 Color { get; set; } = color;
+
+            private Matrix4 modelMatrix = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(position);
 
             private void CalculateModelMatrix()
             {
@@ -188,9 +190,9 @@ namespace _3d_editor.Geometric_figures
 
         private readonly Texture texture = new("D:\\c#projects\\CFE\\3d_editor\\Textures\\Images\\H.png");
 
-        public void CreateNewSphere(float x, float y, float z, float radius)
+        public void CreateNewSphere(Vector3 position, float radius, Vector4 color)
         {
-            var sphere = new Sphere(x, y, z, radius);
+            var sphere = new Sphere(position, radius, color);
             SpheresList.Add(sphere);
         }
 
@@ -233,30 +235,54 @@ namespace _3d_editor.Geometric_figures
 
             foreach (var sphere in SpheresList)
             {
-                Shader.SetVec4("color", new Vector4(0.8f, 0, 0, 1));
+                Shader.SetVec4("color", sphere.Color);
                 Shader.SetMatrix4("model", sphere.GetModelMatrix());
                 GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
             }
         }
 
-        public  void ClickOnObject(int mouseX, int mouseY, int width, int height)
+        public int RayCasting(Vector3 rayOrigin, Vector3 rayDirection)
         {
-            //float x = (2 * mouseX) / width - 1;
-            //float y = 1 - (2 * mouseY) / height;
-            //Vector4 rayClip = (x, y, -1, 1);
-            //Vector4 rayEye = Matrix4.Invert(projectionMatrix) * rayClip;
-            //rayEye = new Vector4(rayEye.X, rayEye.Y, -1, 0);
-            //Vector3 rayWor = (Matrix4.Invert(Camera.GetViewMatrix()) * rayEye).Xyz;
+            Console.WriteLine();
+            Console.WriteLine("O: " + rayOrigin.ToString());
+            Console.WriteLine("D: " + rayDirection.ToString());
+            
+            foreach(var sphere in SpheresList)
+            {
+                Vector3 center = sphere.Position;
+                float r = sphere.Radius;
 
-            //Vector3 rayDirection = Vector3.Normalize(rayWor);
-            //Vector3 rayOrigin = Camera.getCameraPositionVector();
-            //Console.WriteLine("O: " + rayOrigin.ToString());
-            //Console.WriteLine("D: " + rayDirection.ToString());
-            //foreach (var sphere in SpheresList)
-            //{
-            //    Vector3 center = sphere.position;
-            //    float r = sphere.radius;
-            //}
+                Console.WriteLine();
+                Console.WriteLine("Center: " + center.ToString());
+                Console.WriteLine("Radius: " + r.ToString());
+
+                Vector3 distanceVector = center - rayOrigin;
+
+                Console.WriteLine("distence to center " + distanceVector.Length.ToString());
+
+                if (distanceVector.Length <= r)
+                {
+                    Console.WriteLine($"t: {0}");
+                    sphere.Color = new Vector4(0, 1, 0, 1);
+                }
+
+                float distanceAlongRay = Vector3.Dot(rayDirection, distanceVector);
+                Console.WriteLine("DistAlongRay: " + distanceAlongRay.ToString());
+
+                if (distanceAlongRay < 0) continue;
+
+                float distance = r * r + distanceAlongRay * distanceAlongRay - distanceVector.LengthSquared;
+                Console.WriteLine("Dist: " + distance.ToString());
+                if (distance >= 0)
+                {
+                    float t = distanceAlongRay - (float)Math.Sqrt(distance);
+                    Console.WriteLine($"t: {t}");
+                    sphere.Color = new Vector4(0, 1, 0, 1);
+                }
+
+            }
+            return 1;
         }
+
     }
 }

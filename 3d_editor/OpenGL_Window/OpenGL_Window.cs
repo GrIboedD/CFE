@@ -62,8 +62,8 @@ namespace _3d_editor
             UpdateProjectionMatrix();
 
             this.spheres = new Spheres(vertexPathSphere, fragmentPathSphere);
-            this.spheres.CreateNewSphere(2, 0, 0, 1f);
-            this.spheres.CreateNewSphere(-2, 0, 0, 0.5f);
+            this.spheres.CreateNewSphere(new Vector3(2, 0, 0), 1f, new Vector4(1, 0, 0, 1));
+            this.spheres.CreateNewSphere(new Vector3(-2, 0, 0), 0.5f, new Vector4(1, 0, 0, 1));
         }
 
         public void DoResize()
@@ -163,7 +163,7 @@ namespace _3d_editor
             currentMouseX = e.X;
             currentMouseY = e.Y;
 
-            if (e.Button == MouseButtons.Left) spheres.ClickOnObject(e.X, e.Y, this.ClientSize.Width, this.ClientSize.Height);
+            if (e.Button == MouseButtons.Left) spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
         }
 
         public void MouseUpProcessing(MouseEventArgs e)
@@ -198,5 +198,19 @@ namespace _3d_editor
         {
             Camera.SetZoom(zoomFactor);
         }
+
+        private Vector3 GetRayDirection(int mouseX, int mouseY)
+        {
+            float x = (2 * mouseX) / (float)ClientSize.Width - 1;
+            float y = 1 - (2 * mouseY) / (float)ClientSize.Height;
+            
+            Vector4 rayClip = (x, y, -1, 1);
+            Vector4 rayEye = rayClip * Matrix4.Invert(projectionMatrix);
+            rayEye = new Vector4(rayEye.X, rayEye.Y, -1, 0);
+            Vector3 rayWor = (rayEye * Matrix4.Invert(Camera.GetViewMatrix())).Xyz;
+            return Vector3.Normalize(rayWor);
+        }
+
     }
 }
+
