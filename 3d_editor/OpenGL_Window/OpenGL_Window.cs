@@ -104,7 +104,7 @@ namespace _3d_editor
             float deltaTime = (float)(DateTime.Now - lastCallTime).TotalMilliseconds;
             lastCallTime = DateTime.Now;
 
-            this.spheres.Update(projectionMatrix, Camera.GetViewMatrix());
+            spheres.Update(projectionMatrix, Camera.GetViewMatrix());
 
             MoveCamera(deltaTime);
             RotateCamera();

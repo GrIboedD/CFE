@@ -10,7 +10,7 @@ namespace _3d_editor.Geometric_figures
     class Spheres : Figure
     {
 
-        private class Geometry
+        private class ISOSphereGeometry
         {
 
             private struct TriangleIndices(int v1, int v2, int v3)
@@ -59,7 +59,7 @@ namespace _3d_editor.Geometric_figures
                 return index;
             }
 
-            public Geometry(int recursionLevel)
+            public ISOSphereGeometry(int recursionLevel)
             {
 
                 AddVertex(-1.0f, t, 0.0f);
@@ -198,10 +198,23 @@ namespace _3d_editor.Geometric_figures
 
         public Spheres(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
         {
+            string directoryPath = Path.Combine("caсhe", "meshes");
+            string fileName = $"R{recursionLevel}ISOSphere";
 
-            Geometry geometry = new(recursionLevel);
-            this.Vertices = geometry.GetVertices();
-            this.Indices = geometry.GetIndices();
+            var loadedData = LoadMeshes(directoryPath, fileName);
+            if (loadedData.HasValue)
+            {
+                this.Vertices = loadedData.Value.Vertices;
+                this.Indices = loadedData.Value.Indices;
+            }
+            else
+            {
+                ISOSphereGeometry geometry = new(recursionLevel);
+                this.Vertices = geometry.GetVertices();
+                this.Indices = geometry.GetIndices();
+            }
+
+            SaveMeshes(directoryPath, fileName, this.Vertices, this.Indices);
 
             GL.BindVertexArray(this.VAO);
 
