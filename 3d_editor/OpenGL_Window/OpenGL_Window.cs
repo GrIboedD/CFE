@@ -10,6 +10,12 @@ namespace _3d_editor
     [ToolboxItem(true)]
     public partial class OpenGL_Window: GLControl
     {
+
+        static class Light
+        {
+
+        }
+
         const float keySpeed = 0.01f;
         const float mouseSensitivity = 0.007f;
         const float zoomFactorSensitivity = 0.05f;
@@ -163,7 +169,13 @@ namespace _3d_editor
             currentMouseX = e.X;
             currentMouseY = e.Y;
 
-            if (e.Button == MouseButtons.Left) spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+            if (e.Button == MouseButtons.Left)
+            {
+               int index = spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+               if (index <= -1) Console.WriteLine("Miss");
+               else Console.WriteLine($"Sphere {index} is picked");
+            }
+               
         }
 
         public void MouseUpProcessing(MouseEventArgs e)

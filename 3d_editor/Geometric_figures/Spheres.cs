@@ -243,45 +243,35 @@ namespace _3d_editor.Geometric_figures
 
         public int RayCasting(Vector3 rayOrigin, Vector3 rayDirection)
         {
-            Console.WriteLine();
-            Console.WriteLine("O: " + rayOrigin.ToString());
-            Console.WriteLine("D: " + rayDirection.ToString());
-            
-            foreach(var sphere in SpheresList)
+            List<(int index, float distance)> nearestSpheres = [];
+
+            for (int i = 0; i < SpheresList.Count; i++)
             {
+                Sphere sphere = SpheresList[i];
+
                 Vector3 center = sphere.Position;
                 float r = sphere.Radius;
 
-                Console.WriteLine();
-                Console.WriteLine("Center: " + center.ToString());
-                Console.WriteLine("Radius: " + r.ToString());
-
                 Vector3 distanceVector = center - rayOrigin;
 
-                Console.WriteLine("distence to center " + distanceVector.Length.ToString());
-
-                if (distanceVector.Length <= r)
-                {
-                    Console.WriteLine($"t: {0}");
-                    sphere.Color = new Vector4(0, 1, 0, 1);
-                }
+                if (distanceVector.Length <= r) return i;
 
                 float distanceAlongRay = Vector3.Dot(rayDirection, distanceVector);
-                Console.WriteLine("DistAlongRay: " + distanceAlongRay.ToString());
 
                 if (distanceAlongRay < 0) continue;
 
                 float distance = r * r + distanceAlongRay * distanceAlongRay - distanceVector.LengthSquared;
-                Console.WriteLine("Dist: " + distance.ToString());
                 if (distance >= 0)
                 {
                     float t = distanceAlongRay - (float)Math.Sqrt(distance);
-                    Console.WriteLine($"t: {t}");
-                    sphere.Color = new Vector4(0, 1, 0, 1);
+                    nearestSpheres.Add((i, t));
                 }
-
             }
-            return 1;
+
+            if (nearestSpheres.Count == 0) return -1;
+
+            return nearestSpheres.MinBy(x => x.distance).index;
+
         }
 
     }
