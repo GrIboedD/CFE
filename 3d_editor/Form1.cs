@@ -16,7 +16,7 @@ namespace _3d_editor
 
         private void OpenGL_Window_Paint(object sender, PaintEventArgs e)
         {
-            OpenGL_Window.UpdateFrame(OpenGL_Window.ClientSize.Width, OpenGL_Window.ClientSize.Height);
+            OpenGL_Window.UpdateFrame();
             OpenGL_Window.RenderFrame();
         }
 
@@ -33,7 +33,7 @@ namespace _3d_editor
 
         private void Timer_Tick(object sender, EventArgs e)
         {
-            OpenGL_Window.UpdateFrame(OpenGL_Window.ClientSize.Width, OpenGL_Window.ClientSize.Height);
+            OpenGL_Window.UpdateFrame();
             OpenGL_Window.RenderFrame();
         }
 

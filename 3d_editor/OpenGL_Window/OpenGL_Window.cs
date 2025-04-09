@@ -10,6 +10,12 @@ namespace _3d_editor
     [ToolboxItem(true)]
     public partial class OpenGL_Window: GLControl
     {
+
+        static class Light
+        {
+
+        }
+
         const float keySpeed = 0.01f;
         const float mouseSensitivity = 0.007f;
         const float zoomFactorSensitivity = 0.05f;
@@ -18,6 +24,8 @@ namespace _3d_editor
         private const string fragmentPathSphere = "../../../Shaders/sphere.frag";
 
         private readonly Camera Camera = new();
+
+        private Matrix4 projectionMatrix;
 
         Spheres spheres;
 
@@ -50,33 +58,53 @@ namespace _3d_editor
             InitializeComponent();
         }
 
+        private void UpdateProjectionMatrix()
+        {
+            int width = ClientSize.Width;
+            int height = ClientSize.Height;
+            if (width <= 0) width = 1;
+            if (height <= 0) height = 1;
+            projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 4, width / (float)height, 0.1f, 100);
+        }
+
         public void DoLoad()
         {
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             GL.Enable(EnableCap.DepthTest);
-            this.spheres = new Spheres(vertexPathSphere, fragmentPathSphere, Camera);
-            this.spheres.CreateNewSphere(2, 0, 0, 1f);
-            this.spheres.CreateNewSphere(-2, 0, 0, 0.5f);
+
+            UpdateProjectionMatrix();
+
+            this.spheres = new Spheres(vertexPathSphere, fragmentPathSphere);
+            this.spheres.CreateNewSphere(new Vector3(2, 0, 0), 1f, new Vector4(1, 0, 0, 1));
+            this.spheres.CreateNewSphere(new Vector3(-2, 0, 0), 0.5f, new Vector4(1, 0, 0, 1));
         }
 
         public void DoResize()
         {
-            this.MakeCurrent();
+            try
+            {
+                this.MakeCurrent();
 
-            if (this.ClientRectangle.Height == 0)
-                this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, 1);
+                if (this.ClientRectangle.Height == 0)
+                    this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, 1);
 
-            GL.Viewport(0, 0, this.ClientSize.Width, this.ClientSize.Height);
+                GL.Viewport(0, 0, this.ClientSize.Width, this.ClientSize.Height);
+                UpdateProjectionMatrix();
+            }
+            catch (OpenTK.Windowing.GraphicsLibraryFramework.GLFWException ex)
+            {
+                Console.WriteLine($"GLWindow MakeCurrent error: {ex}");
+            }
         }
 
 
 
-        public void UpdateFrame(int width, int height)
+        public void UpdateFrame()
         {
             float deltaTime = (float)(DateTime.Now - lastCallTime).TotalMilliseconds;
             lastCallTime = DateTime.Now;
 
-            this.spheres.Update(width, height);
+            spheres.Update(projectionMatrix, Camera.GetViewMatrix());
 
             MoveCamera(deltaTime);
             RotateCamera();
@@ -85,10 +113,18 @@ namespace _3d_editor
 
         public void RenderFrame()
         {
-            this.MakeCurrent();
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            this.spheres.Draw();
-            this.SwapBuffers();
+            try
+            {
+                this.MakeCurrent();
+                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+                this.spheres.Draw();
+                this.SwapBuffers();
+            }
+            catch(OpenTK.Windowing.GraphicsLibraryFramework.GLFWException ex)
+            {
+                Console.WriteLine($"GLWindow MakeCurrent error: {ex}");
+            }
+
         }
 
         public void KeyDownProcessing(KeyEventArgs e)
@@ -154,6 +190,14 @@ namespace _3d_editor
             lastMouseY = e.Y;
             currentMouseX = e.X;
             currentMouseY = e.Y;
+
+            if (e.Button == MouseButtons.Left)
+            {
+               int index = spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+               if (index <= -1) Console.WriteLine("Miss");
+               else Console.WriteLine($"Sphere {index} is picked");
+            }
+               
         }
 
         public void MouseUpProcessing(MouseEventArgs e)
@@ -188,5 +232,19 @@ namespace _3d_editor
         {
             Camera.SetZoom(zoomFactor);
         }
+
+        private Vector3 GetRayDirection(int mouseX, int mouseY)
+        {
+            float x = (2 * mouseX) / (float)ClientSize.Width - 1;
+            float y = 1 - (2 * mouseY) / (float)ClientSize.Height;
+            
+            Vector4 rayClip = (x, y, -1, 1);
+            Vector4 rayEye = rayClip * Matrix4.Invert(projectionMatrix);
+            rayEye = new Vector4(rayEye.X, rayEye.Y, -1, 0);
+            Vector3 rayWor = (rayEye * Matrix4.Invert(Camera.GetViewMatrix())).Xyz;
+            return Vector3.Normalize(rayWor);
+        }
+
     }
 }
+

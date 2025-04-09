@@ -10,7 +10,7 @@ namespace _3d_editor.Geometric_figures
     class Spheres : Figure
     {
 
-        private class Geometry
+        private class ISOSphereGeometry
         {
 
             private struct TriangleIndices(int v1, int v2, int v3)
@@ -59,7 +59,7 @@ namespace _3d_editor.Geometric_figures
                 return index;
             }
 
-            public Geometry(int recursionLevel)
+            public ISOSphereGeometry(int recursionLevel)
             {
 
                 AddVertex(-1.0f, t, 0.0f);
@@ -122,14 +122,6 @@ namespace _3d_editor.Geometric_figures
                 indices = faces;
 
             }
-                
-            private Vector2 GetTextureCoordinates(Vector3 vertex)
-            {
-
-                float u = (float)(Math.Asin(vertex.X) / Math.PI + 0.5f);
-                float v = (float)(Math.Asin(vertex.Y) / Math.PI + 0.5f);
-                return new Vector2(u, v);
-            }
 
             public float[] GetVertices()
             {
@@ -139,9 +131,6 @@ namespace _3d_editor.Geometric_figures
                     outVertices.Add(vertex.X);
                     outVertices.Add(vertex.Y);
                     outVertices.Add(vertex.Z);
-                    Vector2 textureCoord = GetTextureCoordinates(vertex);
-                    outVertices.Add(textureCoord.X);
-                    outVertices.Add(textureCoord.Y);
                 }
                 return [.. outVertices];
             }
@@ -160,26 +149,29 @@ namespace _3d_editor.Geometric_figures
 
         }
 
-        private class Sphere(float x, float y, float z, float radius)
+        private class Sphere(Vector3 position, float radius, Vector4 color)
         {
-            private Vector3 position = new(x, y, z);
-            private float radius = radius;
-            private Matrix4 modelMatrix = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(x, y, z);
+            public Vector3 Position { get; private set; } = position;
+            public float Radius { get; private set; } = radius;
+
+            public Vector4 Color { get; set; } = color;
+
+            private Matrix4 modelMatrix = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(position);
 
             private void CalculateModelMatrix()
             {
-                modelMatrix = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(position);
+                modelMatrix = Matrix4.CreateScale(Radius) * Matrix4.CreateTranslation(Position);
             }
 
             public void SetPosition(float x, float y, float z)
             {
-                position = new(x, y, z);
+                Position = new(x, y, z);
                 CalculateModelMatrix();
             }
 
             public void SetRadius(float radius)
             {
-                this.radius = radius;
+                this.Radius = radius;
                 CalculateModelMatrix();
             }
 
@@ -192,24 +184,37 @@ namespace _3d_editor.Geometric_figures
         private float[] Vertices { get; init; }
         private uint[] Indices { get; init; }
 
-        private const int recursionLevel = 3;
+        private const int recursionLevel = 5;
 
         private readonly List<Sphere> SpheresList = [];
 
         private readonly Texture texture = new("D:\\c#projects\\CFE\\3d_editor\\Textures\\Images\\H.png");
 
-        public void CreateNewSphere(float x, float y, float z, float radius)
+        public void CreateNewSphere(Vector3 position, float radius, Vector4 color)
         {
-            var sphere = new Sphere(x, y, z, radius);
+            var sphere = new Sphere(position, radius, color);
             SpheresList.Add(sphere);
         }
 
-        public Spheres(string vertexPath, string fragmentPath, Camera Camera) : base(vertexPath, fragmentPath, Camera)
+        public Spheres(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
         {
+            string directoryPath = Path.Combine("caсhe", "meshes");
+            string fileName = $"R{recursionLevel}ISOSphere";
 
-            Geometry geometry = new(recursionLevel);
-            this.Vertices = geometry.GetVertices();
-            this.Indices = geometry.GetIndices();
+            var loadedData = LoadMeshes(directoryPath, fileName);
+            if (loadedData.HasValue)
+            {
+                this.Vertices = loadedData.Value.Vertices;
+                this.Indices = loadedData.Value.Indices;
+            }
+            else
+            {
+                ISOSphereGeometry geometry = new(recursionLevel);
+                this.Vertices = geometry.GetVertices();
+                this.Indices = geometry.GetIndices();
+            }
+
+            SaveMeshes(directoryPath, fileName, this.Vertices, this.Indices);
 
             GL.BindVertexArray(this.VAO);
 
@@ -223,24 +228,16 @@ namespace _3d_editor.Geometric_figures
 
             int vertexLocation = this.Shader.GetAttribLocation("aPos");
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false,
-                5 * sizeof(float), 0);
+                3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(vertexLocation);
-
-            int texCoordLocation = this.Shader.GetAttribLocation("aTexCoord");
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false,
-                5 * sizeof(float), 3 * sizeof(float));
-            GL.EnableVertexAttribArray(texCoordLocation);
-
         }
 
-        public override void Update(int width, int height)
+        public override void Update(Matrix4 projectionMatrix, Matrix4 viewMatrix)
         {
-            Matrix4 view = Camera.GetViewMatrix();
-            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 4.0f, width / (float)height, 0.1f, 100.0f);
-            this.Shader.SetMatrix4("view", view);
-            this.Shader.SetMatrix4("projection", projection);
+            this.Shader.SetMatrix4("view", viewMatrix);
+            this.Shader.SetMatrix4("projection", projectionMatrix);
         }
-
+        
         public override void Draw()
         {
             if (SpheresList.Count == 0) return;
@@ -248,14 +245,47 @@ namespace _3d_editor.Geometric_figures
             this.texture.Use();
             this.Shader.Use();
             GL.Enable(EnableCap.CullFace);
-            //GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
 
             foreach (var sphere in SpheresList)
             {
-                Shader.SetVec4("color", new Vector4(0.8f, 0, 0, 1));
+                Shader.SetVec4("color", sphere.Color);
                 Shader.SetMatrix4("model", sphere.GetModelMatrix());
                 GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
             }
         }
+
+        public int RayCasting(Vector3 rayOrigin, Vector3 rayDirection)
+        {
+            List<(int index, float distance)> nearestSpheres = [];
+
+            for (int i = 0; i < SpheresList.Count; i++)
+            {
+                Sphere sphere = SpheresList[i];
+
+                Vector3 center = sphere.Position;
+                float r = sphere.Radius;
+
+                Vector3 distanceVector = center - rayOrigin;
+
+                if (distanceVector.Length <= r) return i;
+
+                float distanceAlongRay = Vector3.Dot(rayDirection, distanceVector);
+
+                if (distanceAlongRay < 0) continue;
+
+                float distance = r * r + distanceAlongRay * distanceAlongRay - distanceVector.LengthSquared;
+                if (distance >= 0)
+                {
+                    float t = distanceAlongRay - (float)Math.Sqrt(distance);
+                    nearestSpheres.Add((i, t));
+                }
+            }
+
+            if (nearestSpheres.Count == 0) return -1;
+
+            return nearestSpheres.MinBy(x => x.distance).index;
+
+        }
+
     }
 }

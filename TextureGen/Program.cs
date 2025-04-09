@@ -8,9 +8,9 @@ namespace TextureGen
         {
             var textureGen = new TextureGen(
                 outputPath: "D:\\c#projects\\CFE\\3d_editor\\Textures\\Images\\",
-                width: 200,
-                height: 200,
-                fontSize: 48,
+                width: 1000,
+                height: 1000,
+                fontSize: 200,
                 color: Color.Black
                 );
 
