@@ -58,7 +58,14 @@ namespace _3d_editor
             InitializeComponent();
         }
 
-        private void UpdateProjectionMatrix() => projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 4, ClientSize.Width / (float)ClientSize.Height, 0.1f, 100);
+        private void UpdateProjectionMatrix()
+        {
+            int width = ClientSize.Width;
+            int height = ClientSize.Height;
+            if (width <= 0) width = 1;
+            if (height <= 0) height = 1;
+            projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 4, width / (float)height, 0.1f, 100);
+        }
 
         public void DoLoad()
         {
@@ -74,13 +81,20 @@ namespace _3d_editor
 
         public void DoResize()
         {
-            this.MakeCurrent();
+            try
+            {
+                this.MakeCurrent();
 
-            if (this.ClientRectangle.Height == 0)
-                this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, 1);
+                if (this.ClientRectangle.Height == 0)
+                    this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, 1);
 
-            GL.Viewport(0, 0, this.ClientSize.Width, this.ClientSize.Height);
-            UpdateProjectionMatrix();
+                GL.Viewport(0, 0, this.ClientSize.Width, this.ClientSize.Height);
+                UpdateProjectionMatrix();
+            }
+            catch (OpenTK.Windowing.GraphicsLibraryFramework.GLFWException ex)
+            {
+                Console.WriteLine($"GLWindow MakeCurrent error: {ex}");
+            }
         }
 
 
@@ -99,10 +113,18 @@ namespace _3d_editor
 
         public void RenderFrame()
         {
-            this.MakeCurrent();
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            this.spheres.Draw();
-            this.SwapBuffers();
+            try
+            {
+                this.MakeCurrent();
+                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+                this.spheres.Draw();
+                this.SwapBuffers();
+            }
+            catch(OpenTK.Windowing.GraphicsLibraryFramework.GLFWException ex)
+            {
+                Console.WriteLine($"GLWindow MakeCurrent error: {ex}");
+            }
+
         }
 
         public void KeyDownProcessing(KeyEventArgs e)
