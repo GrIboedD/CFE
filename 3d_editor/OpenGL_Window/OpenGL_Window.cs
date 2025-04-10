@@ -1,4 +1,5 @@
-﻿using _3d_editor.Geometric_figures;
+﻿using _3d_editor._Textures;
+using _3d_editor.Geometric_figures;
 using _3d_editor.View;
 using OpenTK.GLControl;
 using OpenTK.Graphics.OpenGL;
@@ -11,11 +12,6 @@ namespace _3d_editor
     public partial class OpenGL_Window: GLControl
     {
 
-        static class Light
-        {
-
-        }
-
         const float keySpeed = 0.01f;
         const float mouseSensitivity = 0.007f;
         const float zoomFactorSensitivity = 0.05f;
@@ -27,7 +23,7 @@ namespace _3d_editor
 
         private Matrix4 projectionMatrix;
 
-        Spheres spheres;
+        private Spheres Spheres;
 
         private DateTime lastCallTime = DateTime.Now;
 
@@ -74,9 +70,9 @@ namespace _3d_editor
 
             UpdateProjectionMatrix();
 
-            this.spheres = new Spheres(vertexPathSphere, fragmentPathSphere);
-            this.spheres.CreateNewSphere(new Vector3(2, 0, 0), 1f, new Vector4(1, 0, 0, 1));
-            this.spheres.CreateNewSphere(new Vector3(-2, 0, 0), 0.5f, new Vector4(1, 0, 0, 1));
+            this.Spheres = new Spheres(vertexPathSphere, fragmentPathSphere);
+            this.Spheres.CreateNewSphere(new Vector3(2, 0, 0), 1f, Color.Yellow, "Fe");
+            this.Spheres.CreateNewSphere(new Vector3(-2, 0, 0), 0.5f, Color.FromArgb(0, 255, 0));
         }
 
         public void DoResize()
@@ -104,7 +100,7 @@ namespace _3d_editor
             float deltaTime = (float)(DateTime.Now - lastCallTime).TotalMilliseconds;
             lastCallTime = DateTime.Now;
 
-            spheres.Update(projectionMatrix, Camera.GetViewMatrix());
+            Spheres.Update(projectionMatrix, Camera.GetViewMatrix());
 
             MoveCamera(deltaTime);
             RotateCamera();
@@ -117,7 +113,7 @@ namespace _3d_editor
             {
                 this.MakeCurrent();
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-                this.spheres.Draw();
+                this.Spheres.Draw();
                 this.SwapBuffers();
             }
             catch(OpenTK.Windowing.GraphicsLibraryFramework.GLFWException ex)
@@ -193,7 +189,7 @@ namespace _3d_editor
 
             if (e.Button == MouseButtons.Left)
             {
-               int index = spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+               int index = Spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
                if (index <= -1) Console.WriteLine("Miss");
                else Console.WriteLine($"Sphere {index} is picked");
             }

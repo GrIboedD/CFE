@@ -1,6 +1,5 @@
 ﻿using _3d_editor.Shaders;
-using _3d_editor.Textures;
-using _3d_editor.View;
+using _3d_editor._Textures;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
@@ -149,18 +148,20 @@ namespace _3d_editor.Geometric_figures
 
         }
 
-        private class Sphere(Vector3 position, float radius, Vector4 color)
+        private class Sphere(Vector3 position, float radius, Vector4 color, string text)
         {
+
             public Vector3 Position { get; private set; } = position;
             public float Radius { get; private set; } = radius;
 
             public Vector4 Color { get; set; } = color;
+            public Texture Texture { get; private set; } = Textures.GetTexture(text);
 
-            private Matrix4 modelMatrix = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(position);
+            public Matrix4 ModelMatrix { get; private set; } = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(position);
 
             private void CalculateModelMatrix()
             {
-                modelMatrix = Matrix4.CreateScale(Radius) * Matrix4.CreateTranslation(Position);
+                ModelMatrix = Matrix4.CreateScale(Radius) * Matrix4.CreateTranslation(Position);
             }
 
             public void SetPosition(float x, float y, float z)
@@ -175,10 +176,6 @@ namespace _3d_editor.Geometric_figures
                 CalculateModelMatrix();
             }
 
-            public Matrix4 GetModelMatrix()
-            {
-                return modelMatrix;
-            }
         }
 
         private float[] Vertices { get; init; }
@@ -186,20 +183,23 @@ namespace _3d_editor.Geometric_figures
 
         private const int recursionLevel = 5;
 
+        private readonly string directoryPath = Path.Combine("cache", "meshes");
+
+        private readonly string fileName = $"R{recursionLevel}ISOSphere";
+
         private readonly List<Sphere> SpheresList = [];
 
-        private readonly Texture texture = new("D:\\c#projects\\CFE\\3d_editor\\Textures\\Images\\H.png");
+        private static readonly Textures Textures = new();
 
-        public void CreateNewSphere(Vector3 position, float radius, Vector4 color)
+        public void CreateNewSphere(Vector3 position, float radius, Color color, string text = "")
         {
-            var sphere = new Sphere(position, radius, color);
+            var vec4Color = new Vector4(color.R/255.0f, color.G/255.0f, color.B/255.0f, 1);
+            var sphere = new Sphere(position, radius, vec4Color, text);
             SpheresList.Add(sphere);
         }
 
         public Spheres(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
         {
-            string directoryPath = Path.Combine("caсhe", "meshes");
-            string fileName = $"R{recursionLevel}ISOSphere";
 
             var loadedData = LoadMeshes(directoryPath, fileName);
             if (loadedData.HasValue)
@@ -242,14 +242,14 @@ namespace _3d_editor.Geometric_figures
         {
             if (SpheresList.Count == 0) return;
 
-            this.texture.Use();
             this.Shader.Use();
             GL.Enable(EnableCap.CullFace);
 
             foreach (var sphere in SpheresList)
             {
+                sphere.Texture.Use();
                 Shader.SetVec4("color", sphere.Color);
-                Shader.SetMatrix4("model", sphere.GetModelMatrix());
+                Shader.SetMatrix4("model", sphere.ModelMatrix);
                 GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
             }
         }
