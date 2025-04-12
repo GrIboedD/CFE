@@ -15,7 +15,7 @@ namespace _3d_editor.Geometric_figures
 
         private bool _disposedValue = false;
 
-        public abstract void Update(Matrix4 projectionMatrix, Matrix4 viewMatrix);
+        public abstract void Update(Matrix4 projectionMatrix, Matrix4 viewMatrix, Light Ligth);
         public abstract void Draw();
 
         protected static (float[] Vertices, uint[] Indices)? LoadMeshes(string directoryPath, string fileName)

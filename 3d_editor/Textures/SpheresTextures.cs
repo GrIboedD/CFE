@@ -41,13 +41,14 @@ namespace _3d_editor._Textures
     }
 
 
-    class Textures
+    class SpheresTextures
+
     {
       
         private readonly Dictionary<string, Texture> ListOfTextures = [];
         private readonly string directoryPath = Path.Combine("cache", "textures");
 
-        public Textures()
+        public SpheresTextures()
         {
             if (!Directory.Exists(directoryPath))
                 return;

@@ -77,19 +77,38 @@ namespace _3d_editor.Shaders
             return GL.GetAttribLocation(Handle, attribName);
         }
 
-        public void SetInt(string name, int value)
+        public void SetValue(string name, int value)
         {
             int location = GL.GetUniformLocation(Handle, name);
             GL.Uniform1(location, value);
         }
 
-        public void SetMatrix4(string name, Matrix4 matrix)
+        public void SetValue(string name, float value)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform1(location, value);
+        }
+
+        public void SetMatrix(string name, Matrix3 matrix)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.UniformMatrix3(location, true, ref matrix);
+        }
+
+        public void SetMatrix(string name, Matrix4 matrix)
         {
             int location = GL.GetUniformLocation(Handle, name);
             GL.UniformMatrix4(location, true, ref matrix);
         }
 
-        public void SetVec4(string name, Vector4 vector)
+        public void SetVec(string name, Vector3 vector)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform3(location, vector);
+
+        }
+
+        public void SetVec(string name, Vector4 vector)
         {
             int location = GL.GetUniformLocation(Handle, name);
             GL.Uniform4(location, vector);

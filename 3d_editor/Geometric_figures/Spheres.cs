@@ -2,6 +2,7 @@
 using _3d_editor._Textures;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
+using _3d_editor.View;
 
 namespace _3d_editor.Geometric_figures
 {
@@ -148,20 +149,34 @@ namespace _3d_editor.Geometric_figures
 
         }
 
-        private class Sphere(Vector3 position, float radius, Vector4 color, string text)
+        private class Sphere
         {
 
-            public Vector3 Position { get; private set; } = position;
-            public float Radius { get; private set; } = radius;
 
-            public Vector4 Color { get; set; } = color;
-            public Texture Texture { get; private set; } = Textures.GetTexture(text);
+            public Vector3 Position { get; private set; }
+            public float Radius { get; private set; }
 
-            public Matrix4 ModelMatrix { get; private set; } = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(position);
+            public Vector4 Color { get; set; }
+            public Texture Texture { get; private set; }
+
+            public Matrix4 ModelMatrix { get; private set; }
+
+            public Matrix3 NormalMatrix { get; private set; }
+
+            public Sphere(Vector3 position, float radius, Vector4 color, string text)
+            {
+                Position = position;
+                Radius = radius;
+                Color = color;
+                Texture = Textures.GetTexture(text);
+                ModelMatrix = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(position);
+                NormalMatrix = new Matrix3(Matrix4.Transpose(Matrix4.Invert(ModelMatrix)));
+            }
 
             private void CalculateModelMatrix()
             {
                 ModelMatrix = Matrix4.CreateScale(Radius) * Matrix4.CreateTranslation(Position);
+                NormalMatrix = new Matrix3(Matrix4.Transpose(Matrix4.Invert(ModelMatrix)));
             }
 
             public void SetPosition(float x, float y, float z)
@@ -189,7 +204,7 @@ namespace _3d_editor.Geometric_figures
 
         private readonly List<Sphere> SpheresList = [];
 
-        private static readonly Textures Textures = new();
+        private static readonly SpheresTextures Textures = new();
 
         public void CreateNewSphere(Vector3 position, float radius, Color color, string text = "")
         {
@@ -230,12 +245,23 @@ namespace _3d_editor.Geometric_figures
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false,
                 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(vertexLocation);
+
+            int normalsLocation = this.Shader.GetAttribLocation("aNormal");
+            GL.VertexAttribPointer(normalsLocation, 3, VertexAttribPointerType.Float, false,
+                3 * sizeof(float), 0);
+            GL.EnableVertexAttribArray(normalsLocation);
+
+
         }
 
-        public override void Update(Matrix4 projectionMatrix, Matrix4 viewMatrix)
+        public override void Update(Matrix4 projectionMatrix, Matrix4 viewMatrix, Light Light)
         {
-            this.Shader.SetMatrix4("view", viewMatrix);
-            this.Shader.SetMatrix4("projection", projectionMatrix);
+            this.Shader.SetMatrix("view", viewMatrix);
+            this.Shader.SetMatrix("projection", projectionMatrix);
+
+            this.Shader.SetVec("lightsColor", Light.LightsColor);
+            this.Shader.SetValue("ambientStrength", Light.AmbientStrength);
+            this.Shader.SetVec("lightsPosition", Light.LightsPosition);
         }
         
         public override void Draw()
@@ -248,8 +274,9 @@ namespace _3d_editor.Geometric_figures
             foreach (var sphere in SpheresList)
             {
                 sphere.Texture.Use();
-                Shader.SetVec4("color", sphere.Color);
-                Shader.SetMatrix4("model", sphere.ModelMatrix);
+                Shader.SetVec("color", sphere.Color);
+                Shader.SetMatrix("model", sphere.ModelMatrix);
+                Shader.SetMatrix("normalMatrix", sphere.NormalMatrix);
                 GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
             }
         }
