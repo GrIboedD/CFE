@@ -1,6 +1,4 @@
-﻿using _3d_editor._Textures;
-using _3d_editor.Geometric_figures;
-using _3d_editor.View;
+﻿using _3d_editor.Geometric_figures;
 using OpenTK.GLControl;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;

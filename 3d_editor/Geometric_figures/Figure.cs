@@ -1,6 +1,4 @@
-﻿using _3d_editor.Shaders;
-using _3d_editor.View;
-using OpenTK.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
 namespace _3d_editor.Geometric_figures

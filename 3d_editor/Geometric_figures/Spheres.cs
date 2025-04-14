@@ -1,8 +1,5 @@
-﻿using _3d_editor.Shaders;
-using _3d_editor._Textures;
-using OpenTK.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
-using _3d_editor.View;
 
 namespace _3d_editor.Geometric_figures
 {
@@ -149,7 +146,7 @@ namespace _3d_editor.Geometric_figures
 
         }
 
-        private class Sphere
+        private class OneSphere
         {
 
 
@@ -163,7 +160,7 @@ namespace _3d_editor.Geometric_figures
 
             public Matrix3 NormalMatrix { get; private set; }
 
-            public Sphere(Vector3 position, float radius, Vector4 color, string text)
+            public OneSphere(Vector3 position, float radius, Vector4 color, string text)
             {
                 Position = position;
                 Radius = radius;
@@ -202,14 +199,14 @@ namespace _3d_editor.Geometric_figures
 
         private readonly string fileName = $"R{recursionLevel}ISOSphere";
 
-        private readonly List<Sphere> SpheresList = [];
+        private readonly List<OneSphere> SpheresList = [];
 
-        private static readonly SpheresTextures Textures = new();
+        private static readonly SpheresTexturesManager Textures = new();
 
         public void CreateNewSphere(Vector3 position, float radius, Color color, string text = "")
         {
             var vec4Color = new Vector4(color.R/255.0f, color.G/255.0f, color.B/255.0f, 1);
-            var sphere = new Sphere(position, radius, vec4Color, text);
+            var sphere = new OneSphere(position, radius, vec4Color, text);
             SpheresList.Add(sphere);
         }
 
@@ -287,7 +284,7 @@ namespace _3d_editor.Geometric_figures
 
             for (int i = 0; i < SpheresList.Count; i++)
             {
-                Sphere sphere = SpheresList[i];
+                OneSphere sphere = SpheresList[i];
 
                 Vector3 center = sphere.Position;
                 float r = sphere.Radius;

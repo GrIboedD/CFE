@@ -3,7 +3,7 @@ using System.Runtime.InteropServices.Marshalling;
 using OpenTK.Graphics.OpenGL;
 using StbImageSharp;
 
-namespace _3d_editor._Textures
+namespace _3d_editor
 {
 
     class Texture
@@ -41,14 +41,14 @@ namespace _3d_editor._Textures
     }
 
 
-    class SpheresTextures
+    class SpheresTexturesManager
 
     {
       
         private readonly Dictionary<string, Texture> ListOfTextures = [];
         private readonly string directoryPath = Path.Combine("cache", "textures");
 
-        public SpheresTextures()
+        public SpheresTexturesManager()
         {
             if (!Directory.Exists(directoryPath))
                 return;
@@ -63,18 +63,13 @@ namespace _3d_editor._Textures
             }
         }
 
-        public Texture GetTexture(
+        private Texture GenerateTexture(
+            string textureName,
             string text,
-            int size = 500,
-            int fontSize = 144,
-            Color? color = null)
+            int size,
+            int fontSize,
+            Color color)
         {
-            color ??= Color.Black;
-
-            string textureName = text + $"{size}{fontSize}" + color.ToString()[6..] + ".png";
-            Texture? texture = ListOfTextures.GetValueOrDefault(textureName);
-            if (texture is not null) return texture;
-
             Directory.CreateDirectory(directoryPath);
 
             string texturePath = Path.Combine(directoryPath, textureName);
@@ -90,6 +85,22 @@ namespace _3d_editor._Textures
             Texture newTexture = new(texturePath);
             ListOfTextures[textureName] = newTexture;
             return newTexture;
+        }
+
+        public Texture GetTexture(
+            string text,
+            int size = 500,
+            int fontSize = 144,
+            Color? inColor = null)
+        {
+            Color color = inColor ??Color.Black;
+
+            string textureName = text + $"{size}{fontSize}" + color.ToString()[6..] + ".png";
+            Texture? texture = ListOfTextures.GetValueOrDefault(textureName);
+            if (texture is not null) return texture;
+
+            return GenerateTexture(textureName, text, size, fontSize, color);
+
         }
         
        

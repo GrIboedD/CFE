@@ -1,7 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
-namespace _3d_editor.Shaders
+namespace _3d_editor
 {
     public class Shader : IDisposable
     {

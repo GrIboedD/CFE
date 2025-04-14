@@ -1,8 +1,6 @@
-﻿
+﻿using OpenTK.Mathematics;
 
-using OpenTK.Mathematics;
-
-namespace _3d_editor.View
+namespace _3d_editor
 {
     class Light
     {

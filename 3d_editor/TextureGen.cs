@@ -2,7 +2,7 @@
 using System.Drawing.Text;
 
 
-namespace _3d_editor._Textures
+namespace _3d_editor
 {
     class TextureGen: IDisposable
     {
@@ -17,8 +17,8 @@ namespace _3d_editor._Textures
             this.width = width;
             this.height = height;
             this.fontSize = fontSize;
-            this.textColor = Color.Black;
-            this.textColor = color;
+            textColor = Color.Black;
+            textColor = color;
         }
 
 
