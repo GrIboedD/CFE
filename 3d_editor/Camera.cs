@@ -69,6 +69,7 @@ namespace _3d_editor
         {
             var cameraTransformMatrix = Matrix4.Invert(viewMatrix);
             return new Vector3(cameraTransformMatrix[3, 0], cameraTransformMatrix[3, 1], cameraTransformMatrix[3, 2]);
+
         }
     }
 }

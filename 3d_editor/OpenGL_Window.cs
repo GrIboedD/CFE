@@ -19,8 +19,6 @@ namespace _3d_editor
 
         private readonly Camera Camera = new();
 
-        private readonly Light Light = new();
-
         private Matrix4 projectionMatrix;
 
         private Spheres Spheres;
@@ -65,7 +63,7 @@ namespace _3d_editor
 
         public void DoLoad()
         {
-            GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
             GL.Enable(EnableCap.DepthTest);
 
             UpdateProjectionMatrix();
@@ -100,7 +98,7 @@ namespace _3d_editor
             float deltaTime = (float)(DateTime.Now - lastCallTime).TotalMilliseconds;
             lastCallTime = DateTime.Now;
 
-            Spheres.Update(projectionMatrix, Camera.GetViewMatrix(), Light);
+            Spheres.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
 
             MoveCamera(deltaTime);
             RotateCamera();
