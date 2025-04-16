@@ -71,13 +71,6 @@ namespace _3d_editor.Geometric_figures
 
         private static readonly SpheresTexturesManager Textures = new();
 
-        public void CreateNewSphere(Vector3 position, float radius, Color color, string text = "")
-        {
-            var vec4Color = new Vector4(color.R/255.0f, color.G/255.0f, color.B/255.0f, 1);
-            var sphere = new OneSphere(position, radius, vec4Color, text);
-            SpheresList.Add(sphere);
-        }
-
         public Spheres(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
         {
 
@@ -96,15 +89,7 @@ namespace _3d_editor.Geometric_figures
 
             SaveMeshes(directoryPath, fileName, this.Vertices, this.Indices);
 
-            GL.BindVertexArray(this.VAO);
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, this.EBO);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, this.Indices.Length * sizeof(uint),
-                this.Indices, BufferUsageHint.StaticDraw);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, this.VBO);
-            GL.BufferData(BufferTarget.ArrayBuffer, this.Vertices.Length * sizeof(float),
-                this.Vertices, BufferUsageHint.StaticDraw);
+            BindBuffers(Vertices, Indices);
 
             int vertexLocation = this.Shader.GetAttribLocation("aPos");
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false,
@@ -119,8 +104,16 @@ namespace _3d_editor.Geometric_figures
 
         }
 
+        public void CreateNewSphere(Vector3 position, float radius, Color color, string text = "")
+        {
+            var vec4Color = new Vector4(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, 1);
+            var sphere = new OneSphere(position, radius, vec4Color, text);
+            SpheresList.Add(sphere);
+        }
         public override void Update(Matrix4 projectionMatrix, Matrix4 viewMatrix, Vector3 CameraPos)
         {
+            Shader.Use();
+
             this.Shader.SetMatrix("view", viewMatrix);
             this.Shader.SetMatrix("projection", projectionMatrix);
 
@@ -142,7 +135,8 @@ namespace _3d_editor.Geometric_figures
         {
             if (SpheresList.Count == 0) return;
 
-            this.Shader.Use();
+            BindBuffers(Vertices, Indices);
+            Shader.Use();
             GL.Enable(EnableCap.CullFace);
 
             foreach (var sphere in SpheresList)

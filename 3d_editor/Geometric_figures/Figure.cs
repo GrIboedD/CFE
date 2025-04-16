@@ -13,6 +13,19 @@ namespace _3d_editor.Geometric_figures
 
         private bool _disposedValue = false;
 
+        protected void BindBuffers(float[] Vertices, uint[] Indices)
+        {
+            GL.BindVertexArray(VAO);
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBO);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(uint),
+                Indices, BufferUsageHint.StaticDraw);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float),
+                Vertices, BufferUsageHint.StaticDraw);
+        }
+
         public abstract void Update(Matrix4 projectionMatrix, Matrix4 viewMatrix, Vector3 CameraPos);
         public abstract void Draw();
 

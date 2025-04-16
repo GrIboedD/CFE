@@ -10,12 +10,15 @@ namespace _3d_editor
     public partial class OpenGL_Window: GLControl
     {
 
-        const float keySpeed = 0.01f;
+        const float keySpeed = 0.005f;
         const float mouseSensitivity = 0.007f;
         const float zoomFactorSensitivity = 0.05f;
 
         private const string vertexPathSphere = "../../../Shaders/sphere.vert";
         private const string fragmentPathSphere = "../../../Shaders/sphere.frag";
+
+        private const string vertexPathCoordinateGrid = "../../../Shaders/coordinateGrid.vert";
+        private const string fragmentPathCoordinateGrid = "../../../Shaders/coordinateGrid.frag";
 
         private readonly Camera Camera = new();
 
@@ -23,8 +26,11 @@ namespace _3d_editor
 
         private Spheres Spheres;
 
+        private CoordinateGrid CoordinateGrid;
+
         private DateTime lastCallTime = DateTime.Now;
 
+        private readonly Color4 backgroundColor = new(0.2f, 0.2f, 0.2f, 1.0f);
 
         private readonly Dictionary<string, bool> keyStates = new()
         {
@@ -63,14 +69,18 @@ namespace _3d_editor
 
         public void DoLoad()
         {
-            GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+            GL.ClearColor(backgroundColor);
             GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
             UpdateProjectionMatrix();
 
             this.Spheres = new Spheres(vertexPathSphere, fragmentPathSphere);
-            this.Spheres.CreateNewSphere(new Vector3(2, 0, 0), 1f, Color.Yellow, "Fe");
-            this.Spheres.CreateNewSphere(new Vector3(-2, 0, 0), 0.5f, Color.FromArgb(0, 255, 0));
+            this.Spheres.CreateNewSphere(new Vector3(1, 0, 0), 0.5f, Color.Yellow, "Fe");
+            this.Spheres.CreateNewSphere(new Vector3(-1, 0, 0), 0.5f, Color.FromArgb(0, 255, 0));
+
+            CoordinateGrid = new(vertexPathCoordinateGrid, fragmentPathCoordinateGrid);
         }
 
         public void DoResize()
@@ -98,11 +108,12 @@ namespace _3d_editor
             float deltaTime = (float)(DateTime.Now - lastCallTime).TotalMilliseconds;
             lastCallTime = DateTime.Now;
 
-            Spheres.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
-
             MoveCamera(deltaTime);
             RotateCamera();
             SetCameraZoom();
+
+            Spheres.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
+            CoordinateGrid.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
         }
 
         public void RenderFrame()
@@ -111,7 +122,8 @@ namespace _3d_editor
             {
                 this.MakeCurrent();
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-                this.Spheres.Draw();
+                Spheres.Draw();
+                CoordinateGrid.Draw();
                 this.SwapBuffers();
             }
             catch(OpenTK.Windowing.GraphicsLibraryFramework.GLFWException ex)
