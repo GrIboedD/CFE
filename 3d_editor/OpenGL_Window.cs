@@ -4,6 +4,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using System.ComponentModel;
 
+
 namespace _3d_editor
 {
     [ToolboxItem(true)]
@@ -49,9 +50,14 @@ namespace _3d_editor
 
         private float zoomFactor = 1;
 
-        public OpenGL_Window() => InitializeComponent();
+        private static readonly GLControlSettings setting = new()
+        {
+            NumberOfSamples = 4,
+        };
 
-        public OpenGL_Window(IContainer container)
+        public OpenGL_Window() : base(setting) => InitializeComponent();
+
+        public OpenGL_Window(IContainer container) : base(setting)
         {
             container.Add(this);
 
@@ -70,9 +76,17 @@ namespace _3d_editor
         public void DoLoad()
         {
             GL.ClearColor(backgroundColor);
+            
             GL.Enable(EnableCap.DepthTest);
+
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+            GL.GetInteger(GetPName.Samples, out int samples);
+            Console.WriteLine(samples);
+
+
+            GL.Enable(EnableCap.Multisample);
 
             UpdateProjectionMatrix();
 

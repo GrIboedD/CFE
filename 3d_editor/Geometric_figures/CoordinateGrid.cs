@@ -5,32 +5,23 @@ namespace _3d_editor.Geometric_figures
 {
     class CoordinateGrid : Figure
     {
-        private readonly float[] Vertices;
+        private readonly float[] Vertices = [-1, 0, 1, 1, 0, 1, 1, 0, -1, -1, 0, -1];
 
-        private readonly uint[] Indices;
+        private readonly uint[] Indices = [0, 1, 2, 2, 3, 0];
 
-        private readonly uint sectorsCount = 3;
+        private readonly float width = 0.05f;
 
-        private readonly float width = 0.006f;
-
-        private readonly float step = 0.25f;
+        private readonly float step = 1.0f;
 
         private readonly float yCord = 0.0f;
 
-        private Vector4 color = new(0.0f, 0.0f, 0.0f, 0.2f);
+        private Vector4 color = new(0.0f, 0.0f, 0.0f, 1.0f);
 
-        private const float maxCord = 100;
+        private const float maxCord = 1000;
 
-        private Matrix4 xModelMatrix;
-
-        private Matrix4 zModelMatrix;
 
         public CoordinateGrid(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
         {
-
-            CylinderGeometry cylinderGeometry = new(sectorsCount);
-            Vertices = cylinderGeometry.GetVertices();
-            Indices = cylinderGeometry.GetIndices();
 
             BindBuffers(Vertices, Indices);
 
@@ -40,11 +31,12 @@ namespace _3d_editor.Geometric_figures
 
             GL.EnableVertexAttribArray(vertexLocation);
 
-            xModelMatrix = Matrix4.CreateScale(maxCord, width, width);
-            zModelMatrix = xModelMatrix * Matrix4.CreateRotationY(float.Pi / 2);
-
             Shader.Use();
             Shader.SetVec("color", color);
+            Shader.SetValue("gridStep", step);
+            Shader.SetValue("lineWidth", width);
+            Shader.SetMatrix("model", Matrix4.CreateScale(maxCord) * Matrix4.CreateTranslation(0, yCord, 0));
+
         }
 
         public override void Update(Matrix4 projectionMatrix, Matrix4 viewMatrix, Vector3 CameraPos)
@@ -52,27 +44,15 @@ namespace _3d_editor.Geometric_figures
             Shader.Use();
             Shader.SetMatrix("view", viewMatrix);
             Shader.SetMatrix("projection", projectionMatrix);
+            Shader.SetVec("cameraPos", CameraPos);
         }
 
         public override void Draw()
         {
             BindBuffers(Vertices, Indices);
             Shader.Use();
-            GL.Enable(EnableCap.CullFace);
-            for (float i = 0.0f; i <= maxCord; i += step)
-            {
-                Shader.SetMatrix("model", xModelMatrix * Matrix4.CreateTranslation(0.0f, yCord, i));
-                GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
-
-                Shader.SetMatrix("model", xModelMatrix * Matrix4.CreateTranslation(0.0f, yCord, -i));
-                GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
-
-                Shader.SetMatrix("model", zModelMatrix * Matrix4.CreateTranslation(i, yCord, 0.0f));
-                GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
-
-                Shader.SetMatrix("model", zModelMatrix * Matrix4.CreateTranslation(-i, yCord, 0.0f));
-                GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
-            }
+            GL.Disable(EnableCap.CullFace);
+            GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
     }
 
