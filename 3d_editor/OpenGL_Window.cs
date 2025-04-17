@@ -216,6 +216,8 @@ namespace _3d_editor
                int index = Spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
                if (index <= -1) Console.WriteLine("Miss");
                else Console.WriteLine($"Sphere {index} is picked");
+
+                CoordinateGrid.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
             }
                
         }

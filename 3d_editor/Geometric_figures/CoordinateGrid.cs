@@ -62,6 +62,31 @@ namespace _3d_editor.Geometric_figures
             GL.Disable(EnableCap.CullFace);
             GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
+
+        public Vector3? RayCasting(Vector3 rayOrigin, Vector3 rayDirection)
+        {
+            float denom = Vector3.Dot(rayDirection, Vector3.UnitY);
+            if (Math.Abs(denom) > 0.01)
+            {
+                Console.WriteLine(denom);
+                Vector3 p0 = new(0, yCord, 0);
+                float t = Vector3.Dot(p0 - rayOrigin, Vector3.UnitY) / denom;
+
+                if (t <= 0) return null;
+
+                Console.WriteLine(t);
+                Vector3 point = rayOrigin + rayDirection * t;
+                int xSteps = (int)Math.Round(point.X / step);
+                int zSteps = (int)Math.Round(point.Z / step);
+                point.X = step * xSteps;
+                point.Y = yCord;
+                point.Z = step * zSteps;
+                Console.WriteLine(point);
+                return point;
+            }
+
+            return null;
+        }
     }
 
 

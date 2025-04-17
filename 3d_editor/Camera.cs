@@ -26,6 +26,7 @@ namespace _3d_editor
             rotateMatrix = Matrix4.CreateFromQuaternion(Quaternion.Identity);
             targetPositionMartix = Matrix4.CreateTranslation(cameraTarget);
             CalculateViewMatrix();
+            RotateCamera(pitch: -float.Pi / 4);
         }
 
         public Matrix4 GetViewMatrix()
