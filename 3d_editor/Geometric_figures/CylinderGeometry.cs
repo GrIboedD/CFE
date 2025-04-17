@@ -15,14 +15,16 @@ namespace _3d_editor.Geometric_figures
 
         private readonly List<Vector3> vertices = [];
 
+        private readonly List<Vector3> normals = [];
+
         private readonly List<TriangleIndices> indices = [];
 
 
-        private static Vector3 CalcNormal(Vector3 centerPoint, Vector3 circlePoint)
+        private static Vector3 CalcNormal(Vector3 circlePoint)
         {
             Vector3 planeNormal = Vector3.Normalize(new Vector3(0, circlePoint.Y, circlePoint.Z));
-            Vector3 normal = Vector3.Normalize(centerPoint + planeNormal);
-            return normal;
+            return planeNormal;
+
         }
 
         public CylinderGeometry(uint sectorsCount)
@@ -30,28 +32,43 @@ namespace _3d_editor.Geometric_figures
             float step = float.Pi * 2.0f / sectorsCount;
             float angle = -float.Pi;
 
+            //left
             Vector3 centerLeft = new(1.0f, 0.0f, 0.0f);
             Vector3 firstPointLeft = new(1.0f, 0.0f, -1.0f);
             vertices.Add(centerLeft);
-            vertices.Add(centerLeft);
+            normals.Add(centerLeft);
 
             vertices.Add(firstPointLeft);
-            vertices.Add(CalcNormal(centerLeft, firstPointLeft));
+            normals.Add(centerLeft);
 
+            //right
             Vector3 CenterRight = new(-1.0f, 0.0f, 0.0f);
             Vector3 firstPointRight = new(-1.0f, 0.0f, -1.0f);
             vertices.Add(CenterRight);
-            vertices.Add(CenterRight);
+            normals.Add(CenterRight);
 
             vertices.Add(firstPointRight);
-            vertices.Add(CalcNormal(CenterRight, firstPointRight));
+            normals.Add(CenterRight);
 
+            //body
+            vertices.Add(firstPointLeft);
+            vertices.Add(firstPointRight);
+            normals.Add(CalcNormal(firstPointLeft));
+            normals.Add(CalcNormal(firstPointRight));
 
+            //left
             uint centerLeftIndex = 0;
             uint previousPointLeftIndex = 1;
 
+            //right
             uint centerRightIndex = 2;
             uint previousPointRightIndex = 3;
+
+            //body
+            uint bodyPrevLeftIndex = 4;
+            uint bodyPrevRightIndex = 5;
+
+
 
             for (int i = 0; i < sectorsCount; i++)
             {
@@ -62,30 +79,50 @@ namespace _3d_editor.Geometric_figures
                 {
                     indices.Add(new(centerLeftIndex, 1, previousPointLeftIndex));
                     indices.Add(new(centerRightIndex, previousPointRightIndex, 3));
-                    indices.Add(new(previousPointLeftIndex, 1, previousPointRightIndex));
-                    indices.Add(new(previousPointRightIndex, 1, 3));
+
+                    indices.Add(new(bodyPrevLeftIndex, 4, bodyPrevRightIndex));
+                    indices.Add(new(bodyPrevRightIndex, 4, 5));
 
                     break;
                 }
 
+
+                //left
                 Vector3 pointLeft = new(1.0f, y, z);
                 vertices.Add(pointLeft);
-                vertices.Add(CalcNormal(centerLeft, pointLeft));
+                normals.Add(centerLeft);
                 uint pointLeftIndex = (uint)vertices.Count - 1;
                 indices.Add(new(centerLeftIndex, pointLeftIndex, previousPointLeftIndex));
 
+
+                //Right
                 Vector3 pointRight = new(-1.0f, y, z);
                 vertices.Add(pointRight);
-                vertices.Add(CalcNormal(CenterRight, pointRight));
+                normals.Add(CenterRight);
                 uint pointRightIndex = (uint)vertices.Count - 1;
                 indices.Add(new(centerRightIndex, previousPointRightIndex, pointRightIndex));
 
-                indices.Add(new(previousPointLeftIndex, pointLeftIndex, previousPointRightIndex));
-                indices.Add(new(previousPointRightIndex, pointLeftIndex, pointRightIndex));
+                //body
+                Vector3 bodyLeft = pointLeft;
+                vertices.Add(bodyLeft);
+                normals.Add(CalcNormal(bodyLeft));
+
+                Vector3 bodyRight = pointRight;
+                vertices.Add(bodyRight);
+                normals.Add(CalcNormal(bodyRight));
+
+                uint bodyLeftIndex = (uint)vertices.Count - 2;
+                uint bodyRightIndex = (uint)vertices.Count - 1;
+                indices.Add(new(bodyPrevLeftIndex, bodyLeftIndex, bodyPrevRightIndex));
+                indices.Add(new(bodyPrevRightIndex, bodyLeftIndex, bodyRightIndex));
 
 
                 previousPointLeftIndex = pointLeftIndex;
                 previousPointRightIndex = pointRightIndex;
+
+                bodyPrevLeftIndex = bodyLeftIndex;
+                bodyPrevRightIndex = bodyRightIndex;
+
                 angle += step;
             }
         }
@@ -93,12 +130,17 @@ namespace _3d_editor.Geometric_figures
         public float[] GetVertices()
         {
             List<float> outVertices = [];
-            foreach (var vertex in vertices)
+            for (int i = 0; i < vertices.Count; i++)
             {
-                outVertices.Add(vertex.X);
-                outVertices.Add(vertex.Y);
-                outVertices.Add(vertex.Z);
+                outVertices.Add(vertices[i].X);
+                outVertices.Add(vertices[i].Y);
+                outVertices.Add(vertices[i].Z);
+
+                outVertices.Add(normals[i].X);
+                outVertices.Add(normals[i].Y);
+                outVertices.Add(normals[i].Z);
             }
+
             return [.. outVertices];
         }
 

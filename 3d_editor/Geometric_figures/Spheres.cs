@@ -9,8 +9,8 @@ namespace _3d_editor.Geometric_figures
 
         private static class Material
         {
-            public static readonly Vector3 ambient  = new(0.7f);
-            public static readonly Vector3 diffuse = new(0.3f);
+            public static readonly Vector3 ambient  = new(0.4f);
+            public static readonly Vector3 diffuse = new(0.7f);
             public static readonly Vector3 specular = new(0.2f);
             public const float shininess = 64;
         }
@@ -119,7 +119,7 @@ namespace _3d_editor.Geometric_figures
 
             this.Shader.SetVec("viewPos", CameraPos);
 
-            this.Shader.SetVec("light.position", Light.Position);
+            this.Shader.SetVec("light.direction", Light.Direction);
             this.Shader.SetVec("light.ambient", Light.Ambient);
             this.Shader.SetVec("light.diffuse", Light.Diffuse);
             this.Shader.SetVec("light.specular", Light.Specular);
