@@ -21,11 +21,16 @@ namespace _3d_editor
         private const string vertexPathCoordinateGrid = "../../../Shaders/coordinateGrid.vert";
         private const string fragmentPathCoordinateGrid = "../../../Shaders/coordinateGrid.frag";
 
+        private const string vertexPathCylinders = "../../../Shaders/cylinder.vert";
+        private const string fragmentPathCylinders = "../../../Shaders/cylinder.frag";
+
         private readonly Camera Camera = new();
 
         private Matrix4 projectionMatrix;
 
         private Spheres Spheres;
+
+        private Cylinders Cylinders;
 
         private CoordinateGrid CoordinateGrid;
 
@@ -94,6 +99,8 @@ namespace _3d_editor
             this.Spheres.CreateNewSphere(new Vector3(1, 0, 0), 0.5f, Color.Yellow, "Fe");
             this.Spheres.CreateNewSphere(new Vector3(-1, 0, 0), 0.5f, Color.FromArgb(0, 255, 0));
 
+            this.Cylinders = new(vertexPathCylinders, fragmentPathCylinders);
+
             CoordinateGrid = new(vertexPathCoordinateGrid, fragmentPathCoordinateGrid);
         }
 
@@ -127,6 +134,7 @@ namespace _3d_editor
             SetCameraZoom();
 
             Spheres.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
+            Cylinders.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
             CoordinateGrid.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
         }
 
@@ -137,6 +145,7 @@ namespace _3d_editor
                 this.MakeCurrent();
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
                 Spheres.Draw();
+                Cylinders.Draw();
                 CoordinateGrid.Draw();
                 this.SwapBuffers();
             }

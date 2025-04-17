@@ -11,7 +11,7 @@ namespace _3d_editor.Geometric_figures
 
         private readonly float width = 0.05f;
 
-        private readonly float step = 1.0f;
+        private readonly float step = 0.5f;
 
         private readonly float yCord = 0.0f;
 
@@ -68,13 +68,11 @@ namespace _3d_editor.Geometric_figures
             float denom = Vector3.Dot(rayDirection, Vector3.UnitY);
             if (Math.Abs(denom) > 0.01)
             {
-                Console.WriteLine(denom);
                 Vector3 p0 = new(0, yCord, 0);
                 float t = Vector3.Dot(p0 - rayOrigin, Vector3.UnitY) / denom;
 
                 if (t <= 0) return null;
 
-                Console.WriteLine(t);
                 Vector3 point = rayOrigin + rayDirection * t;
                 int xSteps = (int)Math.Round(point.X / step);
                 int zSteps = (int)Math.Round(point.Z / step);

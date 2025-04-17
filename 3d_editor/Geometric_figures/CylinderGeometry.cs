@@ -18,6 +18,13 @@ namespace _3d_editor.Geometric_figures
         private readonly List<TriangleIndices> indices = [];
 
 
+        private static Vector3 CalcNormal(Vector3 centerPoint, Vector3 circlePoint)
+        {
+            Vector3 planeNormal = Vector3.Normalize(new Vector3(0, circlePoint.Y, circlePoint.Z));
+            Vector3 normal = Vector3.Normalize(centerPoint + planeNormal);
+            return normal;
+        }
+
         public CylinderGeometry(uint sectorsCount)
         {
             float step = float.Pi * 2.0f / sectorsCount;
@@ -26,12 +33,18 @@ namespace _3d_editor.Geometric_figures
             Vector3 centerLeft = new(1.0f, 0.0f, 0.0f);
             Vector3 firstPointLeft = new(1.0f, 0.0f, -1.0f);
             vertices.Add(centerLeft);
+            vertices.Add(centerLeft);
+
             vertices.Add(firstPointLeft);
+            vertices.Add(CalcNormal(centerLeft, firstPointLeft));
 
             Vector3 CenterRight = new(-1.0f, 0.0f, 0.0f);
             Vector3 firstPointRight = new(-1.0f, 0.0f, -1.0f);
             vertices.Add(CenterRight);
+            vertices.Add(CenterRight);
+
             vertices.Add(firstPointRight);
+            vertices.Add(CalcNormal(CenterRight, firstPointRight));
 
 
             uint centerLeftIndex = 0;
@@ -57,11 +70,13 @@ namespace _3d_editor.Geometric_figures
 
                 Vector3 pointLeft = new(1.0f, y, z);
                 vertices.Add(pointLeft);
+                vertices.Add(CalcNormal(centerLeft, pointLeft));
                 uint pointLeftIndex = (uint)vertices.Count - 1;
                 indices.Add(new(centerLeftIndex, pointLeftIndex, previousPointLeftIndex));
 
                 Vector3 pointRight = new(-1.0f, y, z);
                 vertices.Add(pointRight);
+                vertices.Add(CalcNormal(CenterRight, pointRight));
                 uint pointRightIndex = (uint)vertices.Count - 1;
                 indices.Add(new(centerRightIndex, previousPointRightIndex, pointRightIndex));
 
