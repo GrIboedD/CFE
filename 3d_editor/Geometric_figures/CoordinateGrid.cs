@@ -19,6 +19,10 @@ namespace _3d_editor.Geometric_figures
 
         private const float maxCord = 1000;
 
+        private readonly float fogDistance = 1;
+
+        private readonly float fogFactor = 0.1f;
+
 
         public CoordinateGrid(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
         {
@@ -35,7 +39,11 @@ namespace _3d_editor.Geometric_figures
             Shader.SetVec("color", color);
             Shader.SetValue("gridStep", step);
             Shader.SetValue("lineWidth", width);
+            Shader.SetValue("fogDistance", fogDistance);
+            Shader.SetValue("fogFactor", fogFactor);
+
             Shader.SetMatrix("model", Matrix4.CreateScale(maxCord) * Matrix4.CreateTranslation(0, yCord, 0));
+
 
         }
 

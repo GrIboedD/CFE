@@ -3,41 +3,42 @@
 in vec3 FragPos;
 out vec4 FragColor;
 
-uniform vec4 color;
+uniform vec4 color ;
 uniform float gridStep;
 uniform float lineWidth;
 
 uniform vec3 cameraPos;
 
+uniform float fogDistance;
+uniform float fogFactor;
+
 void main()
 {
-	float distanseFromView = distance(vec3(0.0), FragPos);
+	float distanseFromView = distance(cameraPos, FragPos);
 
-	float lod = clamp(1, 10, distanseFromView * 0.1);
+	float beta = 1.0;
 
-	float aStep = gridStep;
-
-	if (distanseFromView >= 50)
+	if (distanseFromView >= fogDistance)
 	{
-		gridStep * (1+lod);
+		beta = exp((fogDistance-distanseFromView) * fogFactor);
 	}
 
 
-	vec2 distanceToNearestLine = 1.0 - abs((fract(abs(FragPos.xz) / aStep) - 0.5)) * 2.0;
+	vec2 distanceToNearestLine = 1.0 - abs((fract(abs(FragPos.xz) / gridStep) - 0.5)) * 2.0;
 	float relativeFragMinCord = min(distanceToNearestLine.x, distanceToNearestLine.y);
 
-	float relativeWidth = lineWidth / aStep;
+	float relativeWidth = lineWidth / gridStep;
 
 	float alpha = 0;
 
 	if (relativeFragMinCord < relativeWidth)
 	{
-	alpha =1;
+	alpha = 1;
 	}
 
 
 
 
-	FragColor = color * alpha;
+	FragColor = color * alpha * beta;
 
 }
