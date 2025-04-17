@@ -9,13 +9,13 @@ namespace _3d_editor.Geometric_figures
 
         private readonly uint[] Indices = [0, 1, 2, 2, 3, 0];
 
-        private readonly float width = 0.05f;
+        private readonly float width = 0.02f;
 
         private readonly float step = 0.5f;
 
         private readonly float yCord = 0.0f;
 
-        private Vector4 color = new(0.0f, 0.0f, 0.0f, 1.0f);
+        private Vector4 color = new(0.1f, 0.1f, 0.1f, 1.0f);
 
         private const float maxCord = 1000;
 

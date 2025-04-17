@@ -36,7 +36,7 @@ namespace _3d_editor
 
         private DateTime lastCallTime = DateTime.Now;
 
-        private readonly Color4 backgroundColor = new(0.2f, 0.2f, 0.2f, 1.0f);
+        private readonly Color4 backgroundColor = new(42, 59, 61, 255);
 
         private readonly Dictionary<string, bool> keyStates = new()
         {
@@ -96,8 +96,8 @@ namespace _3d_editor
             UpdateProjectionMatrix();
 
             this.Spheres = new Spheres(vertexPathSphere, fragmentPathSphere);
-            this.Spheres.CreateNewSphere(new Vector3(1, 0, 0), 0.5f, Color.Yellow, "Fe");
-            this.Spheres.CreateNewSphere(new Vector3(-1, 0, 0), 0.5f, Color.FromArgb(0, 255, 0));
+            this.Spheres.CreateNewSphere(new Vector3(1, 0, 0), 0.5f, Color.Red, "H");
+            this.Spheres.CreateNewSphere(new Vector3(-1, 0, 0), 0.5f, Color.Red, "H");
 
             this.Cylinders = new(vertexPathCylinders, fragmentPathCylinders);
 
@@ -146,7 +146,7 @@ namespace _3d_editor
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
                 Spheres.Draw();
                 Cylinders.Draw();
-                CoordinateGrid.Draw();
+               // CoordinateGrid.Draw();
                 this.SwapBuffers();
             }
             catch(OpenTK.Windowing.GraphicsLibraryFramework.GLFWException ex)
