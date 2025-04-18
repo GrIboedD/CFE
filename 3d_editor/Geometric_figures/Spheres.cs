@@ -205,5 +205,15 @@ namespace _3d_editor.Geometric_figures
             return connectedSpheres;
         }
 
+        public List<Vector3> GetListOfSpheresPositions()
+        {
+            List<Vector3> positions = [];
+            foreach(var sphere in SpheresList)
+            {
+                positions.Add(sphere.Position);
+            }
+            return positions;
+        }
+
     }
 }

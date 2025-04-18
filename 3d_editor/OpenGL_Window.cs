@@ -53,8 +53,6 @@ namespace _3d_editor
         private int currentMouseX = 0;
         private int currentMouseY = 0;
 
-        private float zoomFactor = 1;
-
         private static readonly GLControlSettings setting = new()
         {
             NumberOfSamples = 4,
@@ -96,12 +94,13 @@ namespace _3d_editor
             UpdateProjectionMatrix();
 
             this.Spheres = new Spheres(vertexPathSphere, fragmentPathSphere);
-            this.Spheres.CreateNewSphere(new Vector3(1, 1, 0), 0.5f, Color.Red, "O");
-            this.Spheres.CreateNewSphere(new Vector3(-1, 0, 0), 0.5f, Color.Blue, "H");
-            this.Spheres.CreateNewSphere(new Vector3(1, -1, 0), 0.5f, Color.Blue, "H");
+            this.Spheres.CreateNewSphere(new Vector3(1, 1, -5), 0.5f, Color.Red, "O");
+            this.Spheres.CreateNewSphere(new Vector3(-1, 0, -5), 0.5f, Color.Blue, "H");
+            this.Spheres.CreateNewSphere(new Vector3(1, -1, -5), 0.5f, Color.Blue, "H");
             this.Spheres.ConnectSpheres(0, 1);
             this.Spheres.ConnectSpheres(0, 2);
 
+            Camera.SetTargetPosition(Spheres.GetListOfSpheresPositions());
 
             this.Cylinders = new(vertexPathCylinders, fragmentPathCylinders, Spheres);
 
@@ -135,7 +134,6 @@ namespace _3d_editor
 
             MoveCamera(deltaTime);
             RotateCamera();
-            SetCameraZoom();
 
             Spheres.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
             Cylinders.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
@@ -259,13 +257,11 @@ namespace _3d_editor
 
         public void MouseWheelProcessing(MouseEventArgs e)
         {
-            if (e.Delta > 0) zoomFactor += zoomFactorSensitivity;
-            else zoomFactor -= zoomFactorSensitivity;
-        }
+            float value;
+            if (e.Delta > 0) value = -zoomFactorSensitivity;
+            else value = zoomFactorSensitivity;
 
-        private void SetCameraZoom()
-        {
-            Camera.SetZoom(zoomFactor);
+            Camera.MoveCamera(backForward: value);
         }
 
         private Vector3 GetRayDirection(int mouseX, int mouseY)

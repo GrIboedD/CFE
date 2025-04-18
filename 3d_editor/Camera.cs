@@ -11,7 +11,6 @@ namespace _3d_editor
     {
      
         Matrix4 viewMatrix;
-        Matrix4 scaleMatrix;
         Matrix4 cameraPositionMatrix;
         Matrix4 rotateMatrix;
         Matrix4 targetPositionMartix;
@@ -21,7 +20,6 @@ namespace _3d_editor
             var cameraPosition = new Vector3(0, 0, 5);
             var cameraTarget = new Vector3(0, 0, 0);
 
-            scaleMatrix = Matrix4.Identity;
             cameraPositionMatrix = Matrix4.CreateTranslation(cameraPosition);
             rotateMatrix = Matrix4.CreateFromQuaternion(Quaternion.Identity);
             targetPositionMartix = Matrix4.CreateTranslation(cameraTarget);
@@ -36,7 +34,7 @@ namespace _3d_editor
 
         private void CalculateViewMatrix()
         {
-           viewMatrix = scaleMatrix * Matrix4.Invert(cameraPositionMatrix * rotateMatrix * targetPositionMartix);
+           viewMatrix = Matrix4.Invert(cameraPositionMatrix * rotateMatrix * targetPositionMartix);
         }
 
         public void RotateCamera(float pitch = 0.0f, float yaw = 0.0f, float roll = 0.0f)
@@ -60,17 +58,24 @@ namespace _3d_editor
             CalculateViewMatrix();
         }
 
-        public void SetZoom(float zoomFactor)
-        {
-            scaleMatrix = Matrix4.CreateScale(zoomFactor, zoomFactor, zoomFactor);
-            CalculateViewMatrix();
-        }
-
         public Vector3 GetCameraPositionVector()
         {
             var cameraTransformMatrix = Matrix4.Invert(viewMatrix);
             return new Vector3(cameraTransformMatrix[3, 0], cameraTransformMatrix[3, 1], cameraTransformMatrix[3, 2]);
 
+        }
+
+        public void SetTargetPosition(List<Vector3> positions)
+        {
+            var vector = Vector3.Zero;
+            foreach(var position in positions)
+            {
+                vector += position;
+            }
+            vector /= (float)positions.Count;
+
+            targetPositionMartix = Matrix4.CreateTranslation(vector);
+            CalculateViewMatrix();
         }
     }
 }
