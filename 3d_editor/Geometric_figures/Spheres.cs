@@ -17,7 +17,6 @@ namespace _3d_editor.Geometric_figures
 
         private class OneSphere
         {
-
             public Vector3 Position { get; private set; }
             public float Radius { get; private set; }
 
@@ -68,6 +67,8 @@ namespace _3d_editor.Geometric_figures
         private readonly string fileName = $"R{recursionLevel}ISOSphere";
 
         private readonly List<OneSphere> SpheresList = [];
+
+        private readonly HashSet<(int, int)> connectedSpheres = [];
 
         private static readonly SpheresTexturesManager Textures = new();
 
@@ -180,6 +181,28 @@ namespace _3d_editor.Geometric_figures
 
             return nearestSpheres.MinBy(x => x.distance).index;
 
+        }
+
+        public void ConnectSpheres(int indexOne, int indexTwo)
+        {
+            int smallIndex = (indexOne < indexTwo) ? indexOne : indexTwo;
+            int biggerIndx = (indexTwo >= indexOne) ? indexTwo : indexOne;
+            connectedSpheres.Add((smallIndex, biggerIndx));
+        }
+
+        public Vector3 GetSpheresCenterCord(int index)
+        {
+            return SpheresList[index].Position;
+        }
+
+        public float GetSpheresRadius(int index)
+        {
+            return SpheresList[index].Radius;
+        }
+
+        public HashSet<(int, int)> GetHashSetOfConnectedSpheres()
+        {
+            return connectedSpheres;
         }
 
     }

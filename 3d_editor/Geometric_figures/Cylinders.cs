@@ -24,24 +24,26 @@ namespace _3d_editor.Geometric_figures
 
         private readonly string filename = $"S{sectorsCount}Cylinder";
 
-       public Cylinders(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
-        {
-            //var loadedData = LoadMeshes(directoryPath, filename);
-            //if (loadedData.HasValue)
-            //{
-            //    this.Vertices = loadedData.Value.Vertices;
-            //    this.Indices = loadedData.Value.Indices;
-            //}
-            //else
-            //{
-            //    CylinderGeometry gemetry = new(sectorsCount);
-            //    this.Vertices = gemetry.GetVertices();
-            //    this.Indices = gemetry.GetIndices();
-            //}
+        private readonly float sizeFactor = 0.3f;
 
-            CylinderGeometry gemetry = new(sectorsCount);
-            this.Vertices = gemetry.GetVertices();
-            this.Indices = gemetry.GetIndices();
+        private readonly Spheres Spheres;
+
+       public Cylinders(string vertexPath, string fragmentPath, Spheres spheres) : base(vertexPath, fragmentPath)
+        {
+            var loadedData = LoadMeshes(directoryPath, filename);
+            if (loadedData.HasValue)
+            {
+                this.Vertices = loadedData.Value.Vertices;
+                this.Indices = loadedData.Value.Indices;
+            }
+            else
+            {
+                CylinderGeometry gemetry = new(sectorsCount);
+                this.Vertices = gemetry.GetVertices();
+                this.Indices = gemetry.GetIndices();
+            }
+
+            Spheres = spheres;
 
             SaveMeshes(directoryPath, filename, Vertices, Indices);
 
@@ -57,13 +59,6 @@ namespace _3d_editor.Geometric_figures
                 6 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(normalsLocation);
 
-            Matrix4 model = Matrix4.CreateScale(1, 0.15f, 0.15f);
-            Matrix3 normal = new(Matrix4.Transpose(Matrix4.Invert(model)));
-
-            Shader.Use();
-            Shader.SetMatrix("model", model);
-            Shader.SetMatrix("normalMatrix", normal);
-            Shader.SetVec("material.color", Material.color);
         }
 
         public override void Update(Matrix4 projectionMatrix, Matrix4 viewMatrix, Vector3 CameraPos)
@@ -88,10 +83,46 @@ namespace _3d_editor.Geometric_figures
 
         public override void Draw()
         {
+
             BindBuffers(Vertices, Indices);
-            Shader.Use();
-            GL.Enable(EnableCap.CullFace);
-            GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
+
+            HashSet<(int, int)> connectedSpheres = Spheres.GetHashSetOfConnectedSpheres();
+
+            foreach(var couple in connectedSpheres)
+            {
+                Vector3 vec1 = Spheres.GetSpheresCenterCord(couple.Item1);
+                Vector3 vec2 = Spheres.GetSpheresCenterCord(couple.Item2);
+                float r = Math.Min(Spheres.GetSpheresRadius(couple.Item1), Spheres.GetSpheresRadius(couple.Item2));
+
+                Vector3 direction = vec2 - vec1;
+                float length = direction.Length / 2;
+                Vector3 position = (vec1 + vec2) / 2f;
+                float size = r * sizeFactor;
+
+                Matrix4 modelScale = Matrix4.CreateScale(length, size, size);
+                Matrix4 modelTranslation = Matrix4.CreateTranslation(position);
+                Matrix4 modelRotation = GetRotationMatrixFromUnitXtoVector(direction);
+
+                Matrix4 model = modelScale * modelRotation * modelTranslation;
+                Matrix3 normal = new(Matrix4.Transpose(Matrix4.Invert(model)));
+
+                Shader.Use();
+                Shader.SetMatrix("model", model);
+                Shader.SetMatrix("normalMatrix", normal);
+                Shader.SetVec("material.color", Material.color);
+
+                GL.Enable(EnableCap.CullFace);
+                GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            }
+        }
+
+        private static Matrix4 GetRotationMatrixFromUnitXtoVector(Vector3 vector)
+        {
+            Vector3 direction = Vector3.Normalize(vector);
+            Vector3 rotationAxis = Vector3.Cross(direction, Vector3.UnitX);
+            float anlge = (float)MathHelper.Acos(Vector3.Dot(direction, -Vector3.UnitX));
+            Quaternion rotator = Quaternion.FromAxisAngle(rotationAxis, anlge);
+            return Matrix4.CreateFromQuaternion(rotator);
         }
     }
 }

@@ -96,10 +96,14 @@ namespace _3d_editor
             UpdateProjectionMatrix();
 
             this.Spheres = new Spheres(vertexPathSphere, fragmentPathSphere);
-            this.Spheres.CreateNewSphere(new Vector3(1, 0, 0), 0.5f, Color.Red, "H");
-            this.Spheres.CreateNewSphere(new Vector3(-1, 0, 0), 0.5f, Color.Red, "H");
+            this.Spheres.CreateNewSphere(new Vector3(1, 1, 0), 0.5f, Color.Red, "O");
+            this.Spheres.CreateNewSphere(new Vector3(-1, 0, 0), 0.5f, Color.Blue, "H");
+            this.Spheres.CreateNewSphere(new Vector3(1, -1, 0), 0.5f, Color.Blue, "H");
+            this.Spheres.ConnectSpheres(0, 1);
+            this.Spheres.ConnectSpheres(0, 2);
 
-            this.Cylinders = new(vertexPathCylinders, fragmentPathCylinders);
+
+            this.Cylinders = new(vertexPathCylinders, fragmentPathCylinders, Spheres);
 
             CoordinateGrid = new(vertexPathCoordinateGrid, fragmentPathCoordinateGrid);
         }
@@ -146,7 +150,7 @@ namespace _3d_editor
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
                 Spheres.Draw();
                 Cylinders.Draw();
-               // CoordinateGrid.Draw();
+                CoordinateGrid.Draw();
                 this.SwapBuffers();
             }
             catch(OpenTK.Windowing.GraphicsLibraryFramework.GLFWException ex)
