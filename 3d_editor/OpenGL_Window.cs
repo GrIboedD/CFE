@@ -13,7 +13,7 @@ namespace _3d_editor
 
         const float keySpeed = 0.005f;
         const float mouseSensitivity = 0.007f;
-        const float zoomFactorSensitivity = 0.05f;
+        const float zoomFactorSensitivity = 0.5f;
 
         private const string vertexPathSphere = "../../../Shaders/sphere.vert";
         private const string fragmentPathSphere = "../../../Shaders/sphere.frag";
