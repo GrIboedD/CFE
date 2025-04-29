@@ -65,14 +65,17 @@ namespace _3d_editor
 
         }
 
-        public void SetTargetPosition(List<Vector3> positions)
+        public void SetTargetPosition(List<Vector3>? positions)
         {
             var vector = Vector3.Zero;
-            foreach(var position in positions)
+            if (positions is not null)
             {
-                vector += position;
+                foreach (var position in positions)
+                {
+                    vector += position;
+                }
+                vector /= (float)positions.Count;
             }
-            vector /= (float)positions.Count;
 
             targetPositionMartix = Matrix4.CreateTranslation(vector);
             CalculateViewMatrix();

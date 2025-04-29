@@ -97,12 +97,16 @@ namespace _3d_editor
             this.Spheres.CreateNewSphere(new Vector3(1, 1, -5), 0.5f, Color.Red, "O");
             this.Spheres.CreateNewSphere(new Vector3(-1, 0, -5), 0.5f, Color.Blue, "H");
             this.Spheres.CreateNewSphere(new Vector3(1, -1, -5), 0.5f, Color.Blue, "H");
-            this.Spheres.ConnectSpheres(0, 1);
-            this.Spheres.ConnectSpheres(0, 2);
+
+            //LoadFromFlypFile("D:\\study\\ХимФормулы\\Модели\\(C2H5)2O - диэтиловый эфир.flyp");
+
 
             Camera.SetTargetPosition(Spheres.GetListOfSpheresPositions());
 
-            this.Cylinders = new(vertexPathCylinders, fragmentPathCylinders, Spheres);
+            this.Cylinders = new(vertexPathCylinders, fragmentPathCylinders);
+
+            Cylinders.CreateNewCylinder(Spheres.GetSpheresCenterCord(0), Spheres.GetSpheresCenterCord(1), 0.1f, Color.Green);
+            Cylinders.CreateNewCylinder(Spheres.GetSpheresCenterCord(2), Spheres.GetSpheresCenterCord(1), 0.1f, Color.Green);
 
             CoordinateGrid = new(vertexPathCoordinateGrid, fragmentPathCoordinateGrid);
         }
@@ -274,6 +278,17 @@ namespace _3d_editor
             rayEye = new Vector4(rayEye.X, rayEye.Y, -1, 0);
             Vector3 rayWor = (rayEye * Matrix4.Invert(Camera.GetViewMatrix())).Xyz;
             return Vector3.Normalize(rayWor);
+        }
+
+        public void LoadFromFlypFile(string path)
+        {
+            var flypLoader = new FlypLoader(this);
+            flypLoader.openFlypFile(path);
+        }
+
+        public void AddSphere(Vector3 position, float radius, Color color, string text)
+        {
+            Spheres.CreateNewSphere(position, radius, color, text);
         }
 
     }

@@ -8,7 +8,6 @@ namespace _3d_editor.Geometric_figures
 
         private static class Material
         {
-            public static readonly Vector4 color = new(0.5f, 0.5f, 0.5f, 1);
             public static readonly Vector3 ambient = new(0.4f);
             public static readonly Vector3 diffuse = new(0.7f);
             public static readonly Vector3 specular = new(0.2f);
@@ -26,9 +25,9 @@ namespace _3d_editor.Geometric_figures
 
         private readonly float sizeFactor = 0.3f;
 
-        private readonly Spheres Spheres;
+        private readonly List<OneCylinder> CylindersList = [];
 
-       public Cylinders(string vertexPath, string fragmentPath, Spheres spheres) : base(vertexPath, fragmentPath)
+       public Cylinders(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
         {
             var loadedData = LoadMeshes(directoryPath, filename);
             if (loadedData.HasValue)
@@ -42,8 +41,6 @@ namespace _3d_editor.Geometric_figures
                 this.Vertices = gemetry.GetVertices();
                 this.Indices = gemetry.GetIndices();
             }
-
-            Spheres = spheres;
 
             SaveMeshes(directoryPath, filename, Vertices, Indices);
 
@@ -83,46 +80,115 @@ namespace _3d_editor.Geometric_figures
 
         public override void Draw()
         {
+            if (CylindersList.Count == 0)
+                return;
 
             BindBuffers(Vertices, Indices);
 
-            HashSet<(int, int)> connectedSpheres = Spheres.GetHashSetOfConnectedSpheres();
+            Shader.Use();
+            GL.Enable(EnableCap.CullFace);
 
-            foreach(var couple in connectedSpheres)
+            foreach(var cylinder in CylindersList)
             {
-                Vector3 vec1 = Spheres.GetSpheresCenterCord(couple.Item1);
-                Vector3 vec2 = Spheres.GetSpheresCenterCord(couple.Item2);
-                float r = Math.Min(Spheres.GetSpheresRadius(couple.Item1), Spheres.GetSpheresRadius(couple.Item2));
-
-                Vector3 direction = vec2 - vec1;
-                float length = direction.Length / 2;
-                Vector3 position = (vec1 + vec2) / 2f;
-                float size = r * sizeFactor;
-
-                Matrix4 modelScale = Matrix4.CreateScale(length, size, size);
-                Matrix4 modelTranslation = Matrix4.CreateTranslation(position);
-                Matrix4 modelRotation = GetRotationMatrixFromUnitXtoVector(direction);
-
-                Matrix4 model = modelScale * modelRotation * modelTranslation;
-                Matrix3 normal = new(Matrix4.Transpose(Matrix4.Invert(model)));
-
-                Shader.Use();
-                Shader.SetMatrix("model", model);
-                Shader.SetMatrix("normalMatrix", normal);
-                Shader.SetVec("material.color", Material.color);
-
-                GL.Enable(EnableCap.CullFace);
+                Shader.SetMatrix("model", cylinder.ModelMatrix);
+                Shader.SetMatrix("normalMatrix", cylinder.NormalMatrix);
+                Shader.SetVec("material.color", cylinder.Color);
                 GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
             }
         }
 
-        private static Matrix4 GetRotationMatrixFromUnitXtoVector(Vector3 vector)
+        private static bool IsVecOneLessVecTwo(Vector3 vecOne, Vector3 vecTwo)
         {
-            Vector3 direction = Vector3.Normalize(vector);
-            Vector3 rotationAxis = Vector3.Cross(direction, Vector3.UnitX);
-            float anlge = (float)MathHelper.Acos(Vector3.Dot(direction, -Vector3.UnitX));
-            Quaternion rotator = Quaternion.FromAxisAngle(rotationAxis, anlge);
-            return Matrix4.CreateFromQuaternion(rotator);
+            if (vecOne.X < vecTwo.X)
+                return true;
+            if (vecOne.X > vecTwo.X)
+                return false;
+
+            if (vecOne.Y < vecTwo.Y)
+                return true;
+            if (vecOne.Y > vecTwo.Y)
+                return false;
+
+            if (vecOne.Z < vecTwo.Z)
+                return true;
+            //The Last check is unnecessary couse the vecs are equal or the vecOne is greater
+            return false;
+        }
+
+        private bool isCylinderExists(Vector3 Point1, Vector3 Point2)
+        {
+
+            for (int i = 0; i < CylindersList.Count; i++)
+            {
+                OneCylinder cylinder = CylindersList[i];
+                Vector3 cylinderPoint1 = cylinder.Point1;
+                Vector3 cylinerPoint2 = cylinder.Point2;
+
+                if (cylinderPoint1 == Point1 && cylinerPoint2 == Point2)
+                {
+                    return true;
+                }
+
+            }
+
+            return false;
+        }
+
+        public void CreateNewCylinder(Vector3 Point1, Vector3 Point2, float radius, Color color)
+        {
+            Vector3 aPoint1 = IsVecOneLessVecTwo(Point1, Point2) ? Point1 : Point2;
+            Vector3 aPoint2 = IsVecOneLessVecTwo(Point1, Point2) ? Point2 : Point1;
+            if (!isCylinderExists(aPoint1, aPoint2))
+            {
+                var vec4Color = new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, 1);
+                var cylinder = new OneCylinder(aPoint1, aPoint2, radius, vec4Color);
+                CylindersList.Add(cylinder);
+            }
+        }
+        
+
+        private class OneCylinder
+        {
+            public float Radius { get; private set; }
+            public Vector4 Color { get; private set; }
+
+            public Matrix4 ModelMatrix { get; private set; }
+            public Matrix3 NormalMatrix { get; private set; }
+
+            public Vector3 Point1 { get; init; }
+            public Vector3 Point2 { get; init; }
+
+            public OneCylinder(Vector3 Point1, Vector3 Point2, float radius, Vector4 color)
+            {
+                this.Point1 = Point1;
+                this.Point2 = Point2;
+                this.Radius = radius;
+                this.Color = color;
+                CalculateModelAndNormalMatrix();
+            }
+
+            private void CalculateModelAndNormalMatrix()
+            {
+                Vector3 direction = Point2 - Point1;
+                float length = direction.Length / 2;
+                Vector3 position = (Point1 + Point2) / 2f;
+
+                Matrix4 modelScale = Matrix4.CreateScale(length, Radius, Radius);
+                Matrix4 modelTranslation = Matrix4.CreateTranslation(position);
+                Matrix4 modelRotation = GetRotationMatrixFromUnitXtoVector(direction);
+
+                ModelMatrix = modelScale * modelRotation * modelTranslation;
+                NormalMatrix = new(Matrix4.Transpose(Matrix4.Invert(ModelMatrix)));
+            }
+
+            private static Matrix4 GetRotationMatrixFromUnitXtoVector(Vector3 vector)
+            {
+                Vector3 direction = Vector3.Normalize(vector);
+                Vector3 rotationAxis = Vector3.Cross(direction, Vector3.UnitX);
+                float anlge = (float)MathHelper.Acos(Vector3.Dot(direction, -Vector3.UnitX));
+                Quaternion rotator = Quaternion.FromAxisAngle(rotationAxis, anlge);
+                return Matrix4.CreateFromQuaternion(rotator);
+            }
         }
     }
 }

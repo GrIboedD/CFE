@@ -37,7 +37,7 @@ namespace _3d_editor.Geometric_figures
                 NormalMatrix = new Matrix3(Matrix4.Transpose(Matrix4.Invert(ModelMatrix)));
             }
 
-            private void CalculateModelMatrix()
+            private void CalculateModelAndNormalMatrix()
             {
                 ModelMatrix = Matrix4.CreateScale(Radius) * Matrix4.CreateTranslation(Position);
                 NormalMatrix = new Matrix3(Matrix4.Transpose(Matrix4.Invert(ModelMatrix)));
@@ -46,13 +46,13 @@ namespace _3d_editor.Geometric_figures
             public void SetPosition(float x, float y, float z)
             {
                 Position = new(x, y, z);
-                CalculateModelMatrix();
+                CalculateModelAndNormalMatrix();
             }
 
             public void SetRadius(float radius)
             {
                 this.Radius = radius;
-                CalculateModelMatrix();
+                CalculateModelAndNormalMatrix();
             }
 
         }
@@ -67,8 +67,6 @@ namespace _3d_editor.Geometric_figures
         private readonly string fileName = $"R{recursionLevel}ISOSphere";
 
         private readonly List<OneSphere> SpheresList = [];
-
-        private readonly HashSet<(int, int)> connectedSpheres = [];
 
         private static readonly SpheresTexturesManager Textures = new();
 
@@ -183,13 +181,6 @@ namespace _3d_editor.Geometric_figures
 
         }
 
-        public void ConnectSpheres(int indexOne, int indexTwo)
-        {
-            int smallIndex = (indexOne < indexTwo) ? indexOne : indexTwo;
-            int biggerIndx = (indexTwo >= indexOne) ? indexTwo : indexOne;
-            connectedSpheres.Add((smallIndex, biggerIndx));
-        }
-
         public Vector3 GetSpheresCenterCord(int index)
         {
             return SpheresList[index].Position;
@@ -200,13 +191,11 @@ namespace _3d_editor.Geometric_figures
             return SpheresList[index].Radius;
         }
 
-        public HashSet<(int, int)> GetHashSetOfConnectedSpheres()
+        public List<Vector3>? GetListOfSpheresPositions()
         {
-            return connectedSpheres;
-        }
+            if (SpheresList is null)
+                return null;
 
-        public List<Vector3> GetListOfSpheresPositions()
-        {
             List<Vector3> positions = [];
             foreach(var sphere in SpheresList)
             {
