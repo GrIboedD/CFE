@@ -11,8 +11,16 @@ namespace _3d_editor
     public partial class OpenGL_Window: GLControl
     {
 
+        private readonly bool RayCastingEnable = false;
+
+        private readonly bool CoordGridEnable = false;
+
+        private readonly bool LeftMouseMoveEnable = true;
+        
+
         const float keySpeed = 0.005f;
-        const float mouseSensitivity = 0.007f;
+        const float mouseRotateSensitivity = 0.007f;
+        const float mouseMoveSensitivity = 0.007f;
         const float zoomFactorSensitivity = 0.5f;
 
         private const string vertexPathSphere = "../../../Shaders/sphere.vert";
@@ -45,6 +53,7 @@ namespace _3d_editor
             {"left", false },
             {"right", false },
             {"rightMouse", false },
+            {"leftMouse", false },
         };
 
 
@@ -128,12 +137,18 @@ namespace _3d_editor
             lastCallTime = DateTime.Now;
 
             MoveCamera(deltaTime);
+
+            if (LeftMouseMoveEnable)
+                MoveCamera();
+
             RotateCamera();
 
             Light.SetLightDirection(Camera.GetCameraUpDirection());
             Spheres.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
             Cylinders.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
-            CoordinateGrid.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
+
+            if (CoordGridEnable)
+                CoordinateGrid.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
         }
 
         public void RenderFrame()
@@ -144,7 +159,10 @@ namespace _3d_editor
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
                 Spheres.Draw();
                 Cylinders.Draw();
-                CoordinateGrid.Draw();
+
+                if (CoordGridEnable)
+                    CoordinateGrid.Draw();
+
                 this.SwapBuffers();
             }
             catch(OpenTK.Windowing.GraphicsLibraryFramework.GLFWException ex)
@@ -210,28 +228,52 @@ namespace _3d_editor
 
         }
 
+        private void MoveCamera()
+        {
+            if (!keyStates["leftMouse"]) return;
+
+            float deltaY = currentMouseX - lastMouseX;
+            float deltaX = currentMouseY - lastMouseY;
+            Camera.MoveCamera(x: -deltaY * mouseMoveSensitivity, y: deltaX * mouseMoveSensitivity);
+
+            lastMouseX = currentMouseX;
+            lastMouseY = currentMouseY;
+        }
+
         public void MouseDownProcessing(MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right) keyStates["rightMouse"] = true;
+            if (e.Button == MouseButtons.Right)
+                keyStates["rightMouse"] = true;
+
             lastMouseX = e.X;
             lastMouseY = e.Y;
             currentMouseX = e.X;
-            currentMouseY = e.Y;
+            currentMouseY = e.Y;    
 
             if (e.Button == MouseButtons.Left)
             {
-               int index = Spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
-               if (index <= -1) Console.WriteLine("Miss");
-               else Console.WriteLine($"Sphere {index} is picked");
+                keyStates["leftMouse"] = true;
 
-                CoordinateGrid.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+                if (RayCastingEnable)
+                {
+                    int index = Spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+                    if (index <= -1) Console.WriteLine("Miss");
+                    else Console.WriteLine($"Sphere {index} is picked");
+
+                    if (CoordGridEnable)
+                        CoordinateGrid.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+                }
             }
                
         }
 
         public void MouseUpProcessing(MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right) keyStates["rightMouse"] = false;
+            if (e.Button == MouseButtons.Right)
+                keyStates["rightMouse"] = false;
+
+            if (e.Button == MouseButtons.Left)
+                keyStates["leftMouse"] = false;
         }
 
         public void MouseMoveProcessing(MouseEventArgs e)
@@ -246,7 +288,7 @@ namespace _3d_editor
 
             float deltaY = currentMouseX - lastMouseX;
             float deltaX = currentMouseY - lastMouseY;
-            Camera.RotateCamera(pitch: -deltaX * mouseSensitivity, yaw: -deltaY * mouseSensitivity);
+            Camera.RotateCamera(pitch: -deltaX * mouseRotateSensitivity, yaw: -deltaY * mouseRotateSensitivity);
             lastMouseX = currentMouseX;
             lastMouseY = currentMouseY;
         }

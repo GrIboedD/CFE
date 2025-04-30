@@ -57,6 +57,13 @@ namespace _3d_editor
             cameraPositionMatrix *= Matrix4.CreateTranslation(leftRight, upDown, backForward);
             CalculateViewMatrix();
         }
+        
+        public void MoveCamera(float x, float y)
+        {
+            Vector3 moveVector = new(x, y, 0);
+            cameraPositionMatrix *= Matrix4.CreateTranslation(moveVector);
+            CalculateViewMatrix();
+        }
 
         public Vector3 GetCameraPositionVector()
         {
