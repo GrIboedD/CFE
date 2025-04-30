@@ -115,7 +115,7 @@ namespace _3d_editor.Geometric_figures
             return false;
         }
 
-        private bool isCylinderExists(Vector3 Point1, Vector3 Point2)
+        private bool IsCylinderExists(Vector3 Point1, Vector3 Point2)
         {
 
             for (int i = 0; i < CylindersList.Count; i++)
@@ -138,7 +138,7 @@ namespace _3d_editor.Geometric_figures
         {
             Vector3 aPoint1 = IsVecOneLessVecTwo(Point1, Point2) ? Point1 : Point2;
             Vector3 aPoint2 = IsVecOneLessVecTwo(Point1, Point2) ? Point2 : Point1;
-            if (!isCylinderExists(aPoint1, aPoint2))
+            if (!IsCylinderExists(aPoint1, aPoint2))
             {
                 var vec4Color = new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, 1);
                 var cylinder = new OneCylinder(aPoint1, aPoint2, radius, vec4Color);

@@ -94,19 +94,10 @@ namespace _3d_editor
             UpdateProjectionMatrix();
 
             this.Spheres = new Spheres(vertexPathSphere, fragmentPathSphere);
-            this.Spheres.CreateNewSphere(new Vector3(1, 1, -5), 0.5f, Color.Red, "O");
-            this.Spheres.CreateNewSphere(new Vector3(-1, 0, -5), 0.5f, Color.Blue, "H");
-            this.Spheres.CreateNewSphere(new Vector3(1, -1, -5), 0.5f, Color.Blue, "H");
-
-            //LoadFromFlypFile("D:\\study\\ХимФормулы\\Модели\\(C2H5)2O - диэтиловый эфир.flyp");
-
-
-            Camera.SetTargetPosition(Spheres.GetListOfSpheresPositions());
 
             this.Cylinders = new(vertexPathCylinders, fragmentPathCylinders);
 
-            Cylinders.CreateNewCylinder(Spheres.GetSpheresCenterCord(0), Spheres.GetSpheresCenterCord(1), 0.1f, Color.Green);
-            Cylinders.CreateNewCylinder(Spheres.GetSpheresCenterCord(2), Spheres.GetSpheresCenterCord(1), 0.1f, Color.Green);
+            LoadFromFlypFile("D:\\study\\ХимФормулы\\Модели\\(C2H5)2O - диэтиловый эфир.flyp");
 
             CoordinateGrid = new(vertexPathCoordinateGrid, fragmentPathCoordinateGrid);
         }
@@ -139,6 +130,7 @@ namespace _3d_editor
             MoveCamera(deltaTime);
             RotateCamera();
 
+            Light.SetLightDirection(Camera.GetCameraUpDirection());
             Spheres.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
             Cylinders.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
             CoordinateGrid.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
@@ -283,12 +275,17 @@ namespace _3d_editor
         public void LoadFromFlypFile(string path)
         {
             var flypLoader = new FlypLoader(this);
-            flypLoader.openFlypFile(path);
+            flypLoader.OpenFlypFile(path);
         }
 
         public void AddSphere(Vector3 position, float radius, Color color, string text)
         {
             Spheres.CreateNewSphere(position, radius, color, text);
+        }
+
+        public void AddCylinder(Vector3 pos1, Vector3 pos2, float radius, Color color)
+        {
+            Cylinders.CreateNewCylinder(pos1, pos2, radius, color);
         }
 
     }

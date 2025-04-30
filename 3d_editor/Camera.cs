@@ -65,19 +65,15 @@ namespace _3d_editor
 
         }
 
-        public void SetTargetPosition(List<Vector3>? positions)
+        public Vector3 GetCameraUpDirection()
         {
-            var vector = Vector3.Zero;
-            if (positions is not null)
-            {
-                foreach (var position in positions)
-                {
-                    vector += position;
-                }
-                vector /= (float)positions.Count;
-            }
+            var cameraTransformMatrix = Matrix4.Invert(viewMatrix);
+            return new Vector3(cameraTransformMatrix[1, 0], cameraTransformMatrix[1, 1], cameraTransformMatrix[1, 2]);
+        }
 
-            targetPositionMartix = Matrix4.CreateTranslation(vector);
+        public void SetTargetPosition(Vector3 position)
+        {
+            targetPositionMartix = Matrix4.CreateTranslation(position);
             CalculateViewMatrix();
         }
     }

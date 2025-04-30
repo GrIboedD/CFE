@@ -8,5 +8,10 @@ namespace _3d_editor
         public static Vector3 Ambient { get; private set; } = new(1.0f);
         public static Vector3 Diffuse { get; private set; } = new(1.0f);
         public static Vector3 Specular { get; private set; } = new(1.0f);
+
+        public static void SetLightDirection(Vector3 direction)
+        {
+            Direction = direction;
+        }
     }
 }
