@@ -3,7 +3,7 @@ namespace _3d_editor
 
     public partial class Form1 : Form
     {
-        public Form1() 
+        public Form1()
         {
             InitializeComponent();
         }
@@ -35,16 +35,6 @@ namespace _3d_editor
         {
             OpenGL_Window.UpdateFrame();
             OpenGL_Window.RenderFrame();
-        }
-
-        private void OpenGL_Window_Enter(object sender, EventArgs e)
-        {
-            Console.WriteLine("Focus in");
-        }
-
-        private void OpenGL_Window_Leave(object sender, EventArgs e)
-        {
-            Console.WriteLine("Focus out");
         }
 
         private void OpenGL_Window_Click(object sender, EventArgs e)
@@ -85,6 +75,22 @@ namespace _3d_editor
         private void OpenGL_Window_MouseWheel(object sender, MouseEventArgs e)
         {
             OpenGL_Window.MouseWheelProcessing(e);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new();
+            openFileDialog.Title = "Выбор модели";
+            openFileDialog.Filter = "3d модель|*.flyp";
+            openFileDialog.FilterIndex = 1;
+            openFileDialog.RestoreDirectory = true;
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string selectedFilePath = openFileDialog.FileName;
+                OpenGL_Window.LoadFromFlypFile(selectedFilePath);
+            }
+
         }
     }
 }

@@ -32,7 +32,7 @@ namespace _3d_editor
 
         }
 
-        private Vector3 ConverteStringToVector3(string value)
+        private static Vector3 ConverteStringToVector3(string value)
         {
             string pattern = @"\s*([^\s]+)\s*,\s*([^\s]+)\s*,\s*([^\s]+)\s*$";
             Vector3 vector = Vector3.Zero;

@@ -31,28 +31,27 @@
             components = new System.ComponentModel.Container();
             OpenGL_Window = new OpenGL_Window(components);
             timer = new System.Windows.Forms.Timer(components);
+            button1 = new Button();
             SuspendLayout();
             // 
             // OpenGL_Window
             // 
             OpenGL_Window.API = OpenTK.Windowing.Common.ContextAPI.OpenGL;
             OpenGL_Window.APIVersion = new Version(3, 3, 0, 0);
-            OpenGL_Window.Dock = DockStyle.Fill;
+            OpenGL_Window.Dock = DockStyle.Right;
             OpenGL_Window.Flags = OpenTK.Windowing.Common.ContextFlags.ForwardCompatible;
             OpenGL_Window.IsEventDriven = true;
-            OpenGL_Window.Location = new Point(0, 0);
+            OpenGL_Window.Location = new Point(500, 0);
             OpenGL_Window.Name = "OpenGL_Window";
             OpenGL_Window.Profile = OpenTK.Windowing.Common.ContextProfile.Core;
             OpenGL_Window.SharedContext = null;
-            OpenGL_Window.Size = new Size(1017, 640);
+            OpenGL_Window.Size = new Size(517, 640);
             OpenGL_Window.TabIndex = 1;
             OpenGL_Window.Load += OpenGL_Window_Load;
             OpenGL_Window.Click += OpenGL_Window_Click;
             OpenGL_Window.Paint += OpenGL_Window_Paint;
-            OpenGL_Window.Enter += OpenGL_Window_Enter;
             OpenGL_Window.KeyDown += OpenGL_Window_KeyDown;
             OpenGL_Window.KeyUp += OpenGL_Window_KeyUp;
-            OpenGL_Window.Leave += OpenGL_Window_Leave;
             OpenGL_Window.MouseDown += OpenGL_Window_MouseDown;
             OpenGL_Window.MouseMove += OpenGL_Window_MouseMove;
             OpenGL_Window.MouseUp += OpenGL_Window_MouseUp;
@@ -63,11 +62,22 @@
             // 
             timer.Tick += Timer_Tick;
             // 
+            // button1
+            // 
+            button1.Location = new Point(135, 199);
+            button1.Name = "button1";
+            button1.Size = new Size(134, 82);
+            button1.TabIndex = 2;
+            button1.Text = "button1";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1017, 640);
+            Controls.Add(button1);
             Controls.Add(OpenGL_Window);
             Name = "Form1";
             Text = "Form1";
@@ -78,5 +88,6 @@
         #endregion
         private OpenGL_Window OpenGL_Window;
         private System.Windows.Forms.Timer timer;
+        private Button button1;
     }
 }

@@ -94,10 +94,6 @@ namespace _3d_editor
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-            GL.GetInteger(GetPName.Samples, out int samples);
-            Console.WriteLine(samples);
-
-
             GL.Enable(EnableCap.Multisample);
 
             UpdateProjectionMatrix();
@@ -105,8 +101,6 @@ namespace _3d_editor
             this.Spheres = new Spheres(vertexPathSphere, fragmentPathSphere);
 
             this.Cylinders = new(vertexPathCylinders, fragmentPathCylinders);
-
-            LoadFromFlypFile("D:\\study\\ХимФормулы\\Модели\\(C2H5)2O - диэтиловый эфир.flyp");
 
             CoordinateGrid = new(vertexPathCoordinateGrid, fragmentPathCoordinateGrid);
         }
@@ -123,10 +117,7 @@ namespace _3d_editor
                 GL.Viewport(0, 0, this.ClientSize.Width, this.ClientSize.Height);
                 UpdateProjectionMatrix();
             }
-            catch (OpenTK.Windowing.GraphicsLibraryFramework.GLFWException ex)
-            {
-                Console.WriteLine($"GLWindow MakeCurrent error: {ex}");
-            }
+            catch (OpenTK.Windowing.GraphicsLibraryFramework.GLFWException) { }
         }
 
 
@@ -165,11 +156,7 @@ namespace _3d_editor
 
                 this.SwapBuffers();
             }
-            catch(OpenTK.Windowing.GraphicsLibraryFramework.GLFWException ex)
-            {
-                Console.WriteLine($"GLWindow MakeCurrent error: {ex}");
-            }
-
+            catch(OpenTK.Windowing.GraphicsLibraryFramework.GLFWException) { }
         }
 
         public void KeyDownProcessing(KeyEventArgs e)
