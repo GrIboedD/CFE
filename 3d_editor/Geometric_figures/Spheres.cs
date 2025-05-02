@@ -9,7 +9,7 @@ namespace _3d_editor.Geometric_figures
 
         private static class Material
         {
-            public static readonly Vector3 ambient  = new(0.4f);
+            public static readonly Vector3 ambient = new(0.4f);
             public static readonly Vector3 diffuse = new(0.7f);
             public static readonly Vector3 specular = new(0.3f);
             public const float shininess = 64;
@@ -129,7 +129,7 @@ namespace _3d_editor.Geometric_figures
             this.Shader.SetValue("material.shininess", Material.shininess);
 
         }
-        
+
         public override void Draw()
         {
             if (SpheresList.Count == 0) return;
@@ -197,11 +197,16 @@ namespace _3d_editor.Geometric_figures
                 return null;
 
             List<Vector3> positions = [];
-            foreach(var sphere in SpheresList)
+            foreach (var sphere in SpheresList)
             {
                 positions.Add(sphere.Position);
             }
             return positions;
+        }
+
+        public void DelAllSpheres()
+        {
+            SpheresList.Clear();
         }
 
     }

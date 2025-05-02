@@ -303,6 +303,8 @@ namespace _3d_editor
 
         public void LoadFromFlypFile(string path)
         {
+            Spheres.DelAllSpheres();
+            Cylinders.DelAllCylinders();
             var flypLoader = new FlypLoader(this);
             flypLoader.OpenFlypFile(path);
         }

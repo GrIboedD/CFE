@@ -134,6 +134,11 @@ namespace _3d_editor.Geometric_figures
             return false;
         }
 
+        public void DelAllCylinders()
+        {
+            CylindersList.Clear();
+        }
+
         public void CreateNewCylinder(Vector3 Point1, Vector3 Point2, float radius, Color color)
         {
             Vector3 aPoint1 = IsVecOneLessVecTwo(Point1, Point2) ? Point1 : Point2;
