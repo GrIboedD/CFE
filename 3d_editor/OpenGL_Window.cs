@@ -11,7 +11,7 @@ namespace _3d_editor
     public partial class OpenGL_Window: GLControl
     {
 
-        private readonly bool RayCastingEnable = false;
+        private readonly bool RayCastingEnable = true;
 
         private readonly bool CoordGridEnable = false;
 
@@ -23,14 +23,14 @@ namespace _3d_editor
         const float mouseMoveSensitivity = 0.007f;
         const float zoomFactorSensitivity = 0.5f;
 
-        private const string vertexPathSphere = "../../../Shaders/sphere.vert";
-        private const string fragmentPathSphere = "../../../Shaders/sphere.frag";
+        private const string vertexPathSphere = "Shaders/sphere.vert";
+        private const string fragmentPathSphere = "Shaders/sphere.frag";
 
-        private const string vertexPathCoordinateGrid = "../../../Shaders/coordinateGrid.vert";
-        private const string fragmentPathCoordinateGrid = "../../../Shaders/coordinateGrid.frag";
+        private const string vertexPathCoordinateGrid = "Shaders/coordinateGrid.vert";
+        private const string fragmentPathCoordinateGrid = "Shaders/coordinateGrid.frag";
 
-        private const string vertexPathCylinders = "../../../Shaders/cylinder.vert";
-        private const string fragmentPathCylinders = "../../../Shaders/cylinder.frag";
+        private const string vertexPathCylinders = "Shaders/cylinder.vert";
+        private const string fragmentPathCylinders = "Shaders/cylinder.frag";
 
         private readonly Camera Camera = new();
 
@@ -54,6 +54,7 @@ namespace _3d_editor
             {"right", false },
             {"rightMouse", false },
             {"leftMouse", false },
+            {"middleMouse", false },
         };
 
 
@@ -103,6 +104,8 @@ namespace _3d_editor
             this.Cylinders = new(vertexPathCylinders, fragmentPathCylinders);
 
             CoordinateGrid = new(vertexPathCoordinateGrid, fragmentPathCoordinateGrid);
+
+            Cylinders.CreateNewCylinder(new Vector3(1, 0, 0), new Vector3(5, 0, 0), 0.5f, Color.Gray);
         }
 
         public void DoResize()
@@ -133,6 +136,7 @@ namespace _3d_editor
                 MoveCamera();
 
             RotateCamera();
+            RollCamera();
 
             Light.SetLightDirection(Camera.GetCameraUpDirection());
             Spheres.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
@@ -229,6 +233,9 @@ namespace _3d_editor
 
         public void MouseDownProcessing(MouseEventArgs e)
         {
+            if (e.Button == MouseButtons.Middle)
+                keyStates["middleMouse"] = true;
+
             if (e.Button == MouseButtons.Right)
                 keyStates["rightMouse"] = true;
 
@@ -243,9 +250,41 @@ namespace _3d_editor
 
                 if (RayCastingEnable)
                 {
-                    int index = Spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
-                    if (index <= -1) Console.WriteLine("Miss");
-                    else Console.WriteLine($"Sphere {index} is picked");
+                    int sphereIndex;
+                    float sphereDist;
+
+                    int cylinderIndex;
+                    float cylinderDist;
+
+                    (sphereIndex, sphereDist) = Spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+
+                    (cylinderIndex, cylinderDist) = Cylinders.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+
+
+                    if (sphereIndex == -1 && cylinderIndex == -1)
+                    {
+                        Console.WriteLine("Miss");
+                    }
+                    else if (sphereIndex == -1)
+                    {
+                        Console.WriteLine($"Cylinder {cylinderIndex} is picked");
+                    }
+                    else if (cylinderIndex == -1)
+                    {
+                        Console.WriteLine($"Sphere {sphereIndex} is picked");
+                    }
+                    else
+                    {
+                        if (cylinderDist < sphereDist)
+                        {
+                            Console.WriteLine($"Cylinder {cylinderIndex} is picked");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Sphere {sphereIndex} is picked");
+                        }
+                    }
+
 
                     if (CoordGridEnable)
                         CoordinateGrid.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
@@ -261,6 +300,9 @@ namespace _3d_editor
 
             if (e.Button == MouseButtons.Left)
                 keyStates["leftMouse"] = false;
+
+            if (e.Button == MouseButtons.Middle)
+                keyStates["middleMouse"] = false;
         }
 
         public void MouseMoveProcessing(MouseEventArgs e)
@@ -276,6 +318,17 @@ namespace _3d_editor
             float deltaY = currentMouseX - lastMouseX;
             float deltaX = currentMouseY - lastMouseY;
             Camera.RotateCamera(pitch: -deltaX * mouseRotateSensitivity, yaw: -deltaY * mouseRotateSensitivity);
+            lastMouseX = currentMouseX;
+            lastMouseY = currentMouseY;
+        }
+
+        private void RollCamera()
+        {
+            if (!keyStates["middleMouse"])
+                return;
+
+            float deltaX = currentMouseX - lastMouseX;
+            Camera.RotateCamera(roll: -deltaX * mouseMoveSensitivity);
             lastMouseX = currentMouseX;
             lastMouseY = currentMouseY;
         }

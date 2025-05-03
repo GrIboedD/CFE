@@ -23,8 +23,6 @@ namespace _3d_editor.Geometric_figures
 
         private readonly string filename = $"S{sectorsCount}Cylinder";
 
-        private readonly float sizeFactor = 0.3f;
-
         private readonly List<OneCylinder> CylindersList = [];
 
        public Cylinders(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
@@ -95,6 +93,145 @@ namespace _3d_editor.Geometric_figures
                 Shader.SetVec("material.color", cylinder.Color);
                 GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
             }
+        }
+
+
+
+        private static Vector3? IntersectionLinePlane(Vector3 lineP, Vector3 lineDir, Vector3 planeP, Vector3 planeNorm)
+        {
+            lineDir = Vector3.Normalize(lineDir);
+            planeNorm = Vector3.Normalize(planeNorm);
+
+            float denom = Vector3.Dot(lineDir, planeNorm);
+            if (Math.Abs(denom) > 0.001)
+            {
+                float t = Vector3.Dot(planeP - lineP, planeNorm) / denom;
+
+                Vector3 point = lineP + lineDir * t;
+                return point;
+            }
+
+            return null;
+        }
+
+        private static bool IsPointOnCylinderSurf(Vector3 cylinderPoint, Vector3 cylinedrAxe, Vector3 surfPoint)
+        {
+            Vector3 subVector = surfPoint - cylinderPoint;
+            float dist = Vector3.Dot(subVector, Vector3.Normalize(cylinedrAxe));
+            return dist >= 0 && dist <= cylinedrAxe.Length;
+        }
+
+        public (int, float) RayCasting(Vector3 rayOrigin, Vector3 rayDirection)
+        {
+            List<(int index, float distance)> nearestCylinders = [];
+
+            for (int i = 0; i < CylindersList.Count; i++)
+            {
+                OneCylinder cylinder = CylindersList[i];
+
+                Vector3 Point1 = cylinder.Point1;
+                Vector3 Point2 = cylinder.Point2;
+                float radius = cylinder.Radius;
+
+                //check if rayOrigin inside cylinder
+                Vector3 cylinderAxes = Point2 - Point1;
+
+                Vector3 cylinderAxesNormalize = Vector3.Normalize(Point2 - Point1);
+
+                Vector3 fromPoint1ToRayOrigin = rayOrigin - Point1;
+
+                Vector3 projectionVector = Vector3.Dot(fromPoint1ToRayOrigin, cylinderAxesNormalize) * cylinderAxesNormalize;
+
+                if (Vector3.Dot(cylinderAxesNormalize, Vector3.Normalize(projectionVector)) > 0)
+                {
+                    if (projectionVector.Length <= cylinderAxes.Length)
+                    {
+                        Vector3 distanceFromAxe = fromPoint1ToRayOrigin - projectionVector;
+                        if (distanceFromAxe.Length <= radius)
+                        {
+                            Console.WriteLine("Inside");
+                            return (i, 0);
+                        }
+                           
+                    }
+                }
+
+                List<float> tList = [];
+
+
+                Vector3? nullableBasePoint1 = IntersectionLinePlane(rayOrigin, rayDirection, Point1, cylinderAxesNormalize);
+                Vector3? nullableBasePoint2 = IntersectionLinePlane(rayOrigin, rayDirection, Point2, cylinderAxesNormalize);
+
+                if (nullableBasePoint1 is not null && nullableBasePoint2 is not null)
+                {
+                    Vector3 basePoint1 = nullableBasePoint1.Value;
+                    Vector3 basePoint2 = nullableBasePoint2.Value;
+
+                    if ((basePoint1 - Point1).Length <= radius)
+                    {
+                        tList.Add((basePoint1 - rayOrigin).Length);
+                    }
+
+                    if ((basePoint2 - Point2).Length <= radius)
+                    {
+                        tList.Add((basePoint2 - rayOrigin).Length);
+                    }
+                }
+
+                Vector3 v = rayOrigin - Point1;
+                Vector3 d = rayDirection;
+
+                Vector3 crossD = Vector3.Cross(d, cylinderAxesNormalize);
+                Vector3 crossV = Vector3.Cross(v, cylinderAxesNormalize);
+
+                float a = Vector3.Dot(crossD, crossD);
+                float b = 2 * Vector3.Dot(crossV, crossD);
+                float c = Vector3.Dot(crossV, crossV) - radius * radius;
+
+                float discriminat = b * b - 4 * a * c;
+                if (discriminat >= 0)
+                {
+                    if (Math.Abs(discriminat) <= 0.001)
+                    {
+                        float t = -b / (2 * a);
+                        Vector3 pointOnSurf = rayOrigin + rayDirection * t;
+                        if (IsPointOnCylinderSurf(Point1, cylinderAxes, pointOnSurf))
+                        {
+                            tList.Add(t);
+                        }
+                    }
+                    else
+                    {
+                        float sqrtD = (float)Math.Sqrt(discriminat);
+                        float t1 = (-b - sqrtD) / (2 * a);
+                        float t2 = (-b + sqrtD) / (2 * a);
+
+                        Vector3 pointOnSurf1 = rayOrigin + rayDirection * t1;
+                        Vector3 pointOnSurf2 = rayOrigin + rayDirection * t2;
+                        
+                        if (IsPointOnCylinderSurf(Point1, cylinderAxes, pointOnSurf1))
+                        {
+                            tList.Add(t1);
+                        }
+
+                        if (IsPointOnCylinderSurf(Point1, cylinderAxes, pointOnSurf2))
+                        {
+                            tList.Add(t2);
+                        }
+                    }
+                }
+
+                List<float> positiveT = [.. tList.Where(x => x >= 0)];
+                if (positiveT.Count > 0)
+                {
+                    nearestCylinders.Add((i, positiveT.Min()));
+                }
+
+            }
+
+            if (nearestCylinders.Count == 0) return (-1, -1);
+
+            return nearestCylinders.MinBy(x => x.distance);
         }
 
         private static bool IsVecOneLessVecTwo(Vector3 vecOne, Vector3 vecTwo)

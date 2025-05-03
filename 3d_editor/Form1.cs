@@ -77,20 +77,22 @@ namespace _3d_editor
             OpenGL_Window.MouseWheelProcessing(e);
         }
 
-        private void button1_Click(object sender, EventArgs e)
+
+        private void ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new();
-            openFileDialog.Title = "Выбор модели";
-            openFileDialog.Filter = "3d модель|*.flyp";
-            openFileDialog.FilterIndex = 1;
-            openFileDialog.RestoreDirectory = true;
+            OpenFileDialog openFileDialog = new()
+            {
+                Title = "Выбор модели",
+                Filter = "3d модель|*.flyp",
+                FilterIndex = 1,
+                RestoreDirectory = true
+            };
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 string selectedFilePath = openFileDialog.FileName;
                 OpenGL_Window.LoadFromFlypFile(selectedFilePath);
             }
-
         }
     }
 }

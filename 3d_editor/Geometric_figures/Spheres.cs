@@ -148,7 +148,7 @@ namespace _3d_editor.Geometric_figures
             }
         }
 
-        public int RayCasting(Vector3 rayOrigin, Vector3 rayDirection)
+        public (int, float) RayCasting(Vector3 rayOrigin, Vector3 rayDirection)
         {
             List<(int index, float distance)> nearestSpheres = [];
 
@@ -161,7 +161,7 @@ namespace _3d_editor.Geometric_figures
 
                 Vector3 distanceVector = center - rayOrigin;
 
-                if (distanceVector.Length <= r) return i;
+                if (distanceVector.Length <= r) return (i, 0);
 
                 float distanceAlongRay = Vector3.Dot(rayDirection, distanceVector);
 
@@ -175,9 +175,9 @@ namespace _3d_editor.Geometric_figures
                 }
             }
 
-            if (nearestSpheres.Count == 0) return -1;
+            if (nearestSpheres.Count == 0) return (-1, -1);
 
-            return nearestSpheres.MinBy(x => x.distance).index;
+            return nearestSpheres.MinBy(x => x.distance);
 
         }
 
