@@ -1,16 +1,18 @@
+using System.Drawing;
+
 namespace _3d_editor
 {
 
-    public partial class Form1 : Form
+    public partial class CFE : Form
     {
-        public Form1()
+        public CFE()
         {
             InitializeComponent();
         }
 
         private void OpenGL_Window_Load(object sender, EventArgs e)
         {
-            OpenGL_Window.DoLoad();
+            OpenGL_Window.DoLoad(flowLayoutPanel1);
             OpenGL_Window.MouseWheel += OpenGL_Window_MouseWheel;
         }
 
@@ -29,6 +31,13 @@ namespace _3d_editor
         {
             timer.Interval = 1;
             timer.Start();
+
+            OpenGL_Window.SetGridLevel(0);
+            OpenGL_Window.SetGridStep(0.5f);
+            numericUpDown1.Value = 0;
+            numericUpDown1.Increment = 0.5m;
+            textBox1.Text = "0,5";
+            textBox1.Tag = "0,5";
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -77,20 +86,57 @@ namespace _3d_editor
             OpenGL_Window.MouseWheelProcessing(e);
         }
 
-        private void button1_Click(object sender, EventArgs e)
+
+        private void ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new();
-            openFileDialog.Title = "Выбор модели";
-            openFileDialog.Filter = "3d модель|*.flyp";
-            openFileDialog.FilterIndex = 1;
-            openFileDialog.RestoreDirectory = true;
+            OpenFileDialog openFileDialog = new()
+            {
+                Title = "Выбор модели",
+                Filter = "3d модель|*.flyp",
+                FilterIndex = 1,
+                RestoreDirectory = true
+            };
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 string selectedFilePath = openFileDialog.FileName;
                 OpenGL_Window.LoadFromFlypFile(selectedFilePath);
             }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            OpenGL_Window.Cursor = Cursors.SizeAll;
 
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            OpenGL_Window.Cursor = Cursors.Default;
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            string value = textBox1.Text;
+            try
+            {
+                float step = float.Parse(value);
+                OpenGL_Window.SetGridStep(step);
+                numericUpDown1.Increment = (decimal)step;
+                textBox1.Tag = value;
+            }
+            catch
+            {
+                textBox1.Text = (string)textBox1.Tag;
+            }
+        }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+            float level = (float)numericUpDown1.Value;
+            OpenGL_Window.SetGridLevel(level);
+        }
+
     }
 }

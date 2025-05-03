@@ -78,6 +78,12 @@ namespace _3d_editor
             return new Vector3(cameraTransformMatrix[1, 0], cameraTransformMatrix[1, 1], cameraTransformMatrix[1, 2]);
         }
 
+        public Vector3 GetCameraFrontDirection()
+        {
+            var cameraTransformMatrix = Matrix4.Invert(viewMatrix);
+            return new Vector3(cameraTransformMatrix[2, 0], cameraTransformMatrix[2, 1], cameraTransformMatrix[2, 2]);
+        }
+
         public void SetTargetPosition(Vector3 position)
         {
             targetPositionMartix = Matrix4.CreateTranslation(position);

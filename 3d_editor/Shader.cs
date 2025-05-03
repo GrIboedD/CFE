@@ -83,6 +83,12 @@ namespace _3d_editor
             GL.Uniform1(location, value);
         }
 
+        public void SetValue(string name, bool value)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform1(location, value ? 1 : 0);
+        }
+
         public void SetValue(string name, float value)
         {
             int location = GL.GetUniformLocation(Handle, name);

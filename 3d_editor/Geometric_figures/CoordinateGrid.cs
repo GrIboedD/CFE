@@ -9,11 +9,11 @@ namespace _3d_editor.Geometric_figures
 
         private readonly uint[] Indices = [0, 1, 2, 2, 3, 0];
 
-        private readonly float width = 0.02f;
+        private readonly float usualWidth = 0.02f;
 
-        private readonly float step = 0.5f;
+        public float step = 0.5f;
 
-        private readonly float yCord = 0.0f;
+        public float yCord = 0.0f;
 
         private Vector4 color = new(0.1f, 0.1f, 0.1f, 1.0f);
 
@@ -37,12 +37,9 @@ namespace _3d_editor.Geometric_figures
 
             Shader.Use();
             Shader.SetVec("color", color);
-            Shader.SetValue("gridStep", step);
-            Shader.SetValue("lineWidth", width);
             Shader.SetValue("fogDistance", fogDistance);
             Shader.SetValue("fogFactor", fogFactor);
 
-            Shader.SetMatrix("model", Matrix4.CreateScale(maxCord) * Matrix4.CreateTranslation(0, yCord, 0));
 
 
         }
@@ -53,6 +50,11 @@ namespace _3d_editor.Geometric_figures
             Shader.SetMatrix("view", viewMatrix);
             Shader.SetMatrix("projection", projectionMatrix);
             Shader.SetVec("cameraPos", CameraPos);
+
+            float width = (step / 0.5f) * usualWidth;
+            Shader.SetValue("lineWidth", width);
+            Shader.SetValue("gridStep", step);
+            Shader.SetMatrix("model", Matrix4.CreateScale(maxCord) * Matrix4.CreateTranslation(0, yCord, 0));
         }
 
         public override void Draw()

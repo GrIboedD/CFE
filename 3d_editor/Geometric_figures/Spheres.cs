@@ -1,4 +1,5 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using Microsoft.VisualBasic.Logging;
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
 namespace _3d_editor.Geometric_figures
@@ -23,6 +24,8 @@ namespace _3d_editor.Geometric_figures
             public Vector4 Color { get; set; }
             public Texture Texture { get; private set; }
 
+            public string Text { get; private set; }
+
             public Matrix4 ModelMatrix { get; private set; }
 
             public Matrix3 NormalMatrix { get; private set; }
@@ -32,7 +35,8 @@ namespace _3d_editor.Geometric_figures
                 Position = position;
                 Radius = radius;
                 Color = color;
-                Texture = Textures.GetTexture(text);
+                Text = text;
+                Texture = Textures.GetTexture(Text);
                 ModelMatrix = Matrix4.CreateScale(radius) * Matrix4.CreateTranslation(position);
                 NormalMatrix = new Matrix3(Matrix4.Transpose(Matrix4.Invert(ModelMatrix)));
             }
@@ -55,6 +59,12 @@ namespace _3d_editor.Geometric_figures
                 CalculateModelAndNormalMatrix();
             }
 
+            public void SetText(string text)
+            {
+                Text = text;
+                Texture = Textures.GetTexture(Text);
+            }
+
         }
 
         private float[] Vertices { get; init; }
@@ -69,6 +79,8 @@ namespace _3d_editor.Geometric_figures
         private readonly List<OneSphere> SpheresList = [];
 
         private static readonly SpheresTexturesManager Textures = new();
+
+        public int pickSphereIndex = 0;
 
         public Spheres(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
         {
@@ -138,17 +150,42 @@ namespace _3d_editor.Geometric_figures
             Shader.Use();
             GL.Enable(EnableCap.CullFace);
 
-            foreach (var sphere in SpheresList)
+            for (int i = 0; i < SpheresList.Count; i++)
             {
+                var sphere = SpheresList[i];
                 sphere.Texture.Use();
                 Shader.SetVec("material.color", sphere.Color);
                 Shader.SetMatrix("model", sphere.ModelMatrix);
                 Shader.SetMatrix("normalMatrix", sphere.NormalMatrix);
                 GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
+
+                if (i == pickSphereIndex)
+                {
+
+                    var tempSphere = new OneSphere(
+                        sphere.Position,
+                        sphere.Radius + 0.1f,
+                        new Vector4(0, 1, 0, 1),
+                        ""
+                        );
+
+                    tempSphere.Texture.Use();
+
+                    Shader.SetValue("usePerpendicularCull", true);
+                    Shader.SetVec("sphereCenter", tempSphere.Position);
+                    Shader.SetVec("material.color", tempSphere.Color);
+                    Shader.SetMatrix("model", tempSphere.ModelMatrix);
+                    Shader.SetMatrix("normalMatrix", tempSphere.NormalMatrix);
+                    GL.Disable(EnableCap.CullFace);
+                  
+                    GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
+                    Shader.SetValue("usePerpendicularCull", false);
+                }
+
             }
         }
 
-        public int RayCasting(Vector3 rayOrigin, Vector3 rayDirection)
+        public (int, float) RayCasting(Vector3 rayOrigin, Vector3 rayDirection)
         {
             List<(int index, float distance)> nearestSpheres = [];
 
@@ -161,7 +198,7 @@ namespace _3d_editor.Geometric_figures
 
                 Vector3 distanceVector = center - rayOrigin;
 
-                if (distanceVector.Length <= r) return i;
+                if (distanceVector.Length <= r) return (i, 0);
 
                 float distanceAlongRay = Vector3.Dot(rayDirection, distanceVector);
 
@@ -175,9 +212,9 @@ namespace _3d_editor.Geometric_figures
                 }
             }
 
-            if (nearestSpheres.Count == 0) return -1;
+            if (nearestSpheres.Count == 0) return (-1, -1);
 
-            return nearestSpheres.MinBy(x => x.distance).index;
+            return nearestSpheres.MinBy(x => x.distance);
 
         }
 
@@ -186,9 +223,39 @@ namespace _3d_editor.Geometric_figures
             return SpheresList[index].Position;
         }
 
+        public void SetSpheresCenterCord(int index, Vector3 pos)
+        {
+            SpheresList[index].SetPosition(pos.X, pos.Y, pos.Z);
+        }
+
         public float GetSpheresRadius(int index)
         {
             return SpheresList[index].Radius;
+        }
+
+        public void SetSpheresRadius(int index, float radius)
+        {
+            SpheresList[index].SetRadius(radius);
+        }
+
+        public Vector4 GetSpheresColor(int index)
+        {
+            return SpheresList[index].Color;
+        }
+
+        public void SetSphereColor(int index, Vector4 color)
+        {
+            SpheresList[index].Color = color;
+        }
+
+        public string GetSpheresText(int index)
+        {
+            return SpheresList[index].Text;
+        }
+
+        public void SetSpheresText(int index, string text)
+        {
+            SpheresList[index].SetText(text);
         }
 
         public List<Vector3>? GetListOfSpheresPositions()
