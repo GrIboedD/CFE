@@ -178,6 +178,8 @@ namespace _3d_editor.Geometric_figures
                     }
                 }
 
+
+
                 Vector3 v = rayOrigin - Point1;
                 Vector3 d = rayDirection;
 
