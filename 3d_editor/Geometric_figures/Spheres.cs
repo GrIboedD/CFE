@@ -79,9 +79,6 @@ namespace _3d_editor.Geometric_figures
         private readonly List<OneSphere> SpheresList = [];
 
         private static readonly SpheresTexturesManager Textures = new();
-
-        public int pickSphereIndex = 0;
-
         public Spheres(string vertexPath, string fragmentPath) : base(vertexPath, fragmentPath)
         {
 
@@ -142,7 +139,39 @@ namespace _3d_editor.Geometric_figures
 
         }
 
-        public override void Draw()
+        public void DrawPickedSphereOutlining(int index)
+        {
+            BindBuffers(Vertices, Indices);
+            Shader.Use();
+
+            GL.Enable(EnableCap.CullFace);
+
+            GL.Enable(EnableCap.StencilTest);
+            GL.StencilFunc(StencilFunction.Notequal, 1, 0xFF);
+            GL.StencilOp(StencilOp.Keep, StencilOp.Keep, StencilOp.Keep);
+
+            var sphere = SpheresList[index];
+            var tempSphere = new OneSphere(
+                sphere.Position,
+                sphere.Radius + 0.04f,
+                new Vector4(0, 1, 0, 1),
+                ""
+                );
+
+            tempSphere.Texture.Use();
+            Shader.SetVec("material.color", tempSphere.Color);
+            Shader.SetMatrix("model", tempSphere.ModelMatrix);
+            Shader.SetMatrix("normalMatrix", tempSphere.NormalMatrix);
+
+            //GL.Disable(EnableCap.DepthTest);
+
+            GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
+
+            //GL.Enable(EnableCap.DepthTest);
+            GL.Disable(EnableCap.StencilTest);
+        }
+
+        public override void Draw(int indexNoDraw = -1)
         {
             if (SpheresList.Count == 0) return;
 
@@ -152,6 +181,10 @@ namespace _3d_editor.Geometric_figures
 
             for (int i = 0; i < SpheresList.Count; i++)
             {
+                if (indexNoDraw == i)
+                {
+                    continue;
+                }
                 var sphere = SpheresList[i];
                 sphere.Texture.Use();
                 Shader.SetVec("material.color", sphere.Color);
@@ -159,30 +192,24 @@ namespace _3d_editor.Geometric_figures
                 Shader.SetMatrix("normalMatrix", sphere.NormalMatrix);
                 GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
 
-                if (i == pickSphereIndex)
-                {
-
-                    var tempSphere = new OneSphere(
-                        sphere.Position,
-                        sphere.Radius + 0.1f,
-                        new Vector4(0, 1, 0, 1),
-                        ""
-                        );
-
-                    tempSphere.Texture.Use();
-
-                    Shader.SetValue("usePerpendicularCull", true);
-                    Shader.SetVec("sphereCenter", tempSphere.Position);
-                    Shader.SetVec("material.color", tempSphere.Color);
-                    Shader.SetMatrix("model", tempSphere.ModelMatrix);
-                    Shader.SetMatrix("normalMatrix", tempSphere.NormalMatrix);
-                    GL.Disable(EnableCap.CullFace);
-                  
-                    GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
-                    Shader.SetValue("usePerpendicularCull", false);
-                }
-
             }
+        }
+
+        public void DrawPickedSphere(int index)
+        {
+            BindBuffers(Vertices, Indices);
+            Shader.Use();
+            GL.Enable(EnableCap.CullFace);
+            GL.Enable(EnableCap.StencilTest);
+            GL.StencilOp(StencilOp.Keep, StencilOp.Replace, StencilOp.Replace);
+            var sphere = SpheresList[index];
+            sphere.Texture.Use();
+            Shader.SetVec("material.color", sphere.Color);
+            Shader.SetMatrix("model", sphere.ModelMatrix);
+            Shader.SetMatrix("normalMatrix", sphere.NormalMatrix);
+            GL.StencilFunc(StencilFunction.Always, 1, 0x00);
+            GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.Disable(EnableCap.StencilTest);
         }
 
         public (int, float) RayCasting(Vector3 rayOrigin, Vector3 rayDirection)

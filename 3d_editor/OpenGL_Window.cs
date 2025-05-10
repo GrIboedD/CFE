@@ -53,6 +53,10 @@ namespace _3d_editor
 
         private readonly Color4 backgroundColor = new(42, 59, 61, 255);
 
+        private int pickedIndex = -1;
+
+        private bool isSpherePicked = true;
+
         private readonly Dictionary<string, bool> keyStates = new()
         {
             {"up", false },
@@ -146,6 +150,7 @@ namespace _3d_editor
             RollCamera();
 
             Light.SetLightDirection(Camera.GetCameraUpDirection());
+            
             Spheres.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
             Cylinders.Update(projectionMatrix, Camera.GetViewMatrix(), Camera.GetCameraPositionVector());
 
@@ -158,12 +163,33 @@ namespace _3d_editor
             try
             {
                 this.MakeCurrent();
-                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-                Spheres.Draw();
-                Cylinders.Draw();
+                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
+                if (isSpherePicked)
+                {
+                    Spheres.Draw(pickedIndex);
+                    Cylinders.Draw();
+                }
+                else
+                {
+                    Spheres.Draw();
+                    Cylinders.Draw(pickedIndex);
+                }
 
                 if (CoordGridEnable)
                     CoordinateGrid.Draw();
+
+                if (pickedIndex >= 0)
+                {
+                    if (isSpherePicked)
+                    {
+                        Spheres.DrawPickedSphere(pickedIndex);
+                        Spheres.DrawPickedSphereOutlining(pickedIndex);
+                    }
+                    else
+                    {
+
+                    }
+                }
 
                 this.SwapBuffers();
             }
@@ -276,6 +302,7 @@ namespace _3d_editor
                     {
                         flowPanel.Controls.Clear();
                         flowPanel.Height = 0;
+                        pickedIndex = -1;
                     }
                     else if (sphereIndex == -1)
                     {
@@ -284,6 +311,7 @@ namespace _3d_editor
                     else if (cylinderIndex == -1)
                     {
                         fillFlowPanelBySphere(sphereIndex);
+                        pickedIndex = sphereIndex;
                     }
                     else
                     {
@@ -294,6 +322,7 @@ namespace _3d_editor
                         else
                         {
                             fillFlowPanelBySphere(sphereIndex);
+                            pickedIndex = sphereIndex;
                         }
                     }
                 }
@@ -409,6 +438,29 @@ namespace _3d_editor
         private void fillFlowPanelBySphere(int index)
         {
             flowPanel.Controls.Clear();
+            Vector3 position = Spheres.GetSpheresCenterCord(index);
+            float radius = Spheres.GetSpheresRadius(index);
+            Vector4 color = Spheres.GetSpheresColor(index);
+            string text = Spheres.GetSpheresText(index);
+
+            AddLabelAndTextBox("Position X:", position.X.ToString("F2"), index, 0);
+            AddLabelAndTextBox("Position Y:", position.Y.ToString("F2"), index, 1);
+            AddLabelAndTextBox("Position Z:", position.Z.ToString("F2"), index, 2);
+
+            AddLabelAndTextBox("Radius:", radius.ToString("F2"), index, 3);
+
+            AddColorPicker("Color:", color, index, 0);
+
+            AddLabelAndTextBox("Text:", text, index, 4);
+
+            flowPanel.Height = 245;
+        }
+
+        private void fillFlowPanelByCylinder(int index)
+        {
+            flowPanel.Controls.Clear();
+
+
             Vector3 position = Spheres.GetSpheresCenterCord(index);
             float radius = Spheres.GetSpheresRadius(index);
             Vector4 color = Spheres.GetSpheresColor(index);

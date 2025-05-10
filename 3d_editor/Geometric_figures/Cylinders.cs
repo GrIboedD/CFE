@@ -76,7 +76,7 @@ namespace _3d_editor.Geometric_figures
             this.Shader.SetValue("material.shininess", Material.shininess);
         }
 
-        public override void Draw()
+        public override void Draw(int indexNoDraw = -1)
         {
             if (CylindersList.Count == 0)
                 return;
@@ -86,8 +86,13 @@ namespace _3d_editor.Geometric_figures
             Shader.Use();
             GL.Enable(EnableCap.CullFace);
 
-            foreach(var cylinder in CylindersList)
+            for (int i = 0; i < CylindersList.Count; i++)
             {
+                if (indexNoDraw == i)
+                {
+                    continue;
+                }
+                var cylinder = CylindersList[i];
                 Shader.SetMatrix("model", cylinder.ModelMatrix);
                 Shader.SetMatrix("normalMatrix", cylinder.NormalMatrix);
                 Shader.SetVec("material.color", cylinder.Color);

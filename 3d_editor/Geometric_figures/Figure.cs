@@ -27,7 +27,7 @@ namespace _3d_editor.Geometric_figures
         }
 
         public abstract void Update(Matrix4 projectionMatrix, Matrix4 viewMatrix, Vector3 CameraPos);
-        public abstract void Draw();
+        public abstract void Draw(int indexNoDraw);
 
         protected static (float[] Vertices, uint[] Indices)? LoadMeshes(string directoryPath, string fileName)
         {

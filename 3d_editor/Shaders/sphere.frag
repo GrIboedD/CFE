@@ -9,9 +9,6 @@ uniform samplerCube cubeSampler;
 
 uniform vec3 viewPos;
 
-uniform bool usePerpendicularCull = false;
-uniform vec3 sphereCenter = vec3(0, 0, 0);
-
 struct Material {
     vec4 color;
     vec3 ambient;
@@ -36,17 +33,6 @@ void main()
     vec3 ambient = light.ambient * material.ambient;
 
     vec3 norm = normalize(Normal);
-
-        if (usePerpendicularCull) {
-        vec3 camToCenter = normalize(sphereCenter - viewPos);
-        float dotProd = dot(norm, camToCenter);
-
-        float threshold = 0.35;
-
-        if (abs(dotProd) >= threshold) {
-            discard;
-        }
-    }
 
     vec3 lightDir = normalize(light.direction);
     float diff = max(dot(norm, lightDir), 0.0);

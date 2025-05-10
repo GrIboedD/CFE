@@ -31,14 +31,14 @@ void main()
 
 	float alpha = 0;
 
-	if (relativeFragMinCord < relativeWidth)
-	{
-	alpha = 1;
-	}
+    if (relativeFragMinCord >= relativeWidth)
+    {
+        discard;
+    }
 
 
 
 
-	FragColor = color * alpha * beta;
+	FragColor = color * beta;
 
 }

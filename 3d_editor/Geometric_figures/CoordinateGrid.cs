@@ -57,7 +57,7 @@ namespace _3d_editor.Geometric_figures
             Shader.SetMatrix("model", Matrix4.CreateScale(maxCord) * Matrix4.CreateTranslation(0, yCord, 0));
         }
 
-        public override void Draw()
+        public override void Draw(int index = -1)
         {
             BindBuffers(Vertices, Indices);
             Shader.Use();
