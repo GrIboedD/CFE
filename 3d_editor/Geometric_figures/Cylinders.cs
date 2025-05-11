@@ -1,5 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
+using System.Diagnostics;
 
 namespace _3d_editor.Geometric_figures
 {
@@ -98,6 +99,50 @@ namespace _3d_editor.Geometric_figures
                 Shader.SetVec("material.color", cylinder.Color);
                 GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
             }
+        }
+
+        public void DrawPickedCylinderOutlining(int index)
+        {
+            BindBuffers(Vertices, Indices);
+            Shader.Use();
+
+            GL.Enable(EnableCap.CullFace);
+
+            GL.Enable(EnableCap.StencilTest);
+            GL.StencilFunc(StencilFunction.Notequal, 1, 0xFF);
+            GL.StencilOp(StencilOp.Keep, StencilOp.Keep, StencilOp.Keep);
+
+            var cylinder = CylindersList[index];
+
+            var tempCylinder = new OneCylinder(
+                cylinder.Point1,
+                cylinder.Point2,
+                cylinder.Radius + 0.04f,
+                new Vector4(0, 1, 0, 1)
+                );
+
+            Shader.SetMatrix("model", tempCylinder.ModelMatrix);
+            Shader.SetMatrix("normalMatrix", tempCylinder.NormalMatrix);
+            Shader.SetVec("material.color", tempCylinder.Color);
+
+            GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.Disable(EnableCap.StencilTest);
+        }
+        public void DrawPickedCylinder(int index)
+        {
+            BindBuffers(Vertices, Indices);
+            Shader.Use();
+            GL.Enable(EnableCap.CullFace);
+            GL.Enable(EnableCap.StencilTest);
+            GL.StencilOp(StencilOp.Keep, StencilOp.Replace, StencilOp.Replace);
+            var cylinder = CylindersList[index];
+            Shader.SetMatrix("model", cylinder.ModelMatrix);
+            Shader.SetMatrix("normalMatrix", cylinder.NormalMatrix);
+            Shader.SetVec("material.color", cylinder.Color);
+            GL.StencilFunc(StencilFunction.Always, 1, 0x00);
+            GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.Disable(EnableCap.StencilTest);
+
         }
 
 
@@ -338,10 +383,30 @@ namespace _3d_editor.Geometric_figures
             }
         }
 
+        public Vector4 GetCylinderColor(int index)
+        {
+            return CylindersList[index].Color;
+        }
+
+        public float GetCylinderRadius(int index)
+        {
+            return CylindersList[index].Radius;
+        }
+
+        public void SetCylinderColor(int index, Vector4 color)
+        {
+            CylindersList[index].Color = color;
+        }
+
+        public void SetCylinderRadius(int index, float radius)
+        {
+            CylindersList[index].SetRadius(radius);
+        }
+
         private class OneCylinder
         {
             public float Radius { get; private set; }
-            public Vector4 Color { get; private set; }
+            public Vector4 Color { get; set; }
 
             public Matrix4 ModelMatrix { get; private set; }
             public Matrix3 NormalMatrix { get; private set; }
@@ -382,7 +447,6 @@ namespace _3d_editor.Geometric_figures
                 ModelMatrix = modelScale * modelRotation * modelTranslation;
                 NormalMatrix = new(Matrix4.Transpose(Matrix4.Invert(ModelMatrix)));
             }
-
             private static Matrix4 GetRotationMatrixFromUnitXtoVector(Vector3 vector)
             {
                 Vector3 direction = Vector3.Normalize(vector);
@@ -390,6 +454,12 @@ namespace _3d_editor.Geometric_figures
                 float anlge = (float)MathHelper.Acos(Vector3.Dot(direction, -Vector3.UnitX));
                 Quaternion rotator = Quaternion.FromAxisAngle(rotationAxis, anlge);
                 return Matrix4.CreateFromQuaternion(rotator);
+            }
+
+            public void SetRadius(float radius)
+            {
+                this.Radius = radius;
+                CalculateModelAndNormalMatrix();
             }
         }
     }

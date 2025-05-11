@@ -1,9 +1,11 @@
 ﻿using _3d_editor.Geometric_figures;
+using Microsoft.VisualBasic.Logging;
 using OpenTK.GLControl;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using System;
 using System.ComponentModel;
+using System.Data;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -187,7 +189,8 @@ namespace _3d_editor
                     }
                     else
                     {
-
+                        Cylinders.DrawPickedCylinder(pickedIndex);
+                        Cylinders.DrawPickedCylinderOutlining(pickedIndex);
                     }
                 }
 
@@ -306,23 +309,29 @@ namespace _3d_editor
                     }
                     else if (sphereIndex == -1)
                     {
-                        Console.WriteLine($"Cylinder {cylinderIndex} is picked");
+                        fillFlowPanelByCylinder(cylinderIndex);
+                        pickedIndex = cylinderIndex;
+                        isSpherePicked = false;
                     }
                     else if (cylinderIndex == -1)
                     {
                         fillFlowPanelBySphere(sphereIndex);
                         pickedIndex = sphereIndex;
+                        isSpherePicked = true;
                     }
                     else
                     {
                         if (cylinderDist < sphereDist)
                         {
-                            Console.WriteLine($"Cylinder {cylinderIndex} is picked");
+                            fillFlowPanelByCylinder(cylinderIndex);
+                            pickedIndex = cylinderIndex;
+                            isSpherePicked = false;
                         }
                         else
                         {
                             fillFlowPanelBySphere(sphereIndex);
                             pickedIndex = sphereIndex;
+                            isSpherePicked = true;
                         }
                     }
                 }
@@ -435,6 +444,7 @@ namespace _3d_editor
             RayCastingGridEnable = false;
         }
 
+
         private void fillFlowPanelBySphere(int index)
         {
             flowPanel.Controls.Clear();
@@ -451,7 +461,7 @@ namespace _3d_editor
 
             AddColorPicker("Color:", color, index, 0);
 
-            AddLabelAndTextBox("Text:", text, index, 4);
+            AddLabelAndTextBox("Text:", text, index, 5);
 
             flowPanel.Height = 245;
         }
@@ -460,23 +470,14 @@ namespace _3d_editor
         {
             flowPanel.Controls.Clear();
 
+            float radius = Cylinders.GetCylinderRadius(index);
+            Vector4 color = Cylinders.GetCylinderColor(index);
 
-            Vector3 position = Spheres.GetSpheresCenterCord(index);
-            float radius = Spheres.GetSpheresRadius(index);
-            Vector4 color = Spheres.GetSpheresColor(index);
-            string text = Spheres.GetSpheresText(index);
+            AddLabelAndTextBox("Radius:", radius.ToString("F2"), index, 4);
 
-            AddLabelAndTextBox("Position X:", position.X.ToString("F2"), index, 0);
-            AddLabelAndTextBox("Position Y:", position.Y.ToString("F2"), index, 1);
-            AddLabelAndTextBox("Position Z:", position.Z.ToString("F2"), index, 2);
+            AddColorPicker("Color:", color, index, 1);
 
-            AddLabelAndTextBox("Radius:", radius.ToString("F2"), index, 3);
-
-            AddColorPicker("Color:", color, index, 0);
-
-            AddLabelAndTextBox("Text:", text, index, 4);
-
-            flowPanel.Height = 245;
+            flowPanel.Height = 85;
         }
 
         private void AddColorPicker(string labelText, Vector4 color, int index, int mod)
@@ -507,9 +508,14 @@ namespace _3d_editor
                     colorPanel.BackColor = colorDialog.Color;
 
                     Vector4 newColor = ConvertColorToVector4(colorDialog.Color);
-                    if (mod == 0)
+                    switch (mod)
                     {
-                        Spheres.SetSphereColor(index, newColor);
+                        case 0:
+                            Spheres.SetSphereColor(index, newColor);
+                            break;
+                        case 1:
+                            Cylinders.SetCylinderColor(index, newColor);
+                            break;
                     }
                 }
             };
@@ -538,6 +544,47 @@ namespace _3d_editor
             );
         }
 
+        private void UpdateSphereCoordinate(int index, int coordIndex, float value)
+        {
+            Vector3 newPos = Spheres.GetSpheresCenterCord(index);
+            switch (coordIndex)
+            {
+                case 0:
+                    newPos.X = value;
+                    break;
+                case 1:
+                    newPos.Y = value;
+                    break;
+                case 2:
+                    newPos.Z = value;
+                    break;
+            }
+            Vector3 oldPos = Spheres.GetSpheresCenterCord(index);
+            float radius = Spheres.GetSpheresRadius(index);
+            Vector3 moveVector = newPos - oldPos;
+            Spheres.SetSpheresCenterCord(index, newPos);
+            Cylinders.MoveCylindersWithSphere(oldPos, radius, moveVector);
+        }
+
+        private void UpdateObjectRadius(int index, int mod, float radius)
+        {
+            if (radius <= 0)
+            {
+                throw new ArgumentException("Radius is zero or negative");
+            }
+
+            switch (mod)
+            {
+                case 3:
+                    Spheres.SetSpheresRadius(index, radius);
+                    break;
+                case 4:
+                    Cylinders.SetCylinderRadius(index, radius);
+                    break;
+
+            }
+        }
+
         private void AddLabelAndTextBox(string labelText, string textBoxText, int index, int mod)
         {
             var label = new Label
@@ -557,51 +604,34 @@ namespace _3d_editor
             textBox.TextChanged += (s, e) =>
             {
                 string currentText = textBox.Text;
-                if (mod is 0 or 1 or 2 or 3)
+                try
                 {
-                    try
+                    switch (mod)
                     {
-                        float value = float.Parse(currentText);
-                        if (mod is 3)
-                        {
-                            if (value <= 0)
-                            {
-                                throw new ArgumentException("Radius is zero or negative");
-                            }
-                            Spheres.SetSpheresRadius(index, value);
-                        }
-                        else if (mod is 0 or 1 or 2)
-                        {
-                            Vector3 newPos = Spheres.GetSpheresCenterCord(index);
-                            switch (mod)
-                            {
-                                case 0:
-                                    newPos.X = value;
-                                    break;
-                                case 1:
-                                    newPos.Y = value;
-                                    break;
-                                case 2:
-                                    newPos.Z = value;
-                                    break;
-                            }
-                            Vector3 oldPos = Spheres.GetSpheresCenterCord(index);
-                            float radius = Spheres.GetSpheresRadius(index);
-                            Vector3 moveVector = newPos - oldPos;
-                            Spheres.SetSpheresCenterCord(index, newPos);
-                            Cylinders.MoveCylindersWithSphere(oldPos, radius, moveVector);
-                        }
-                        textBox.Tag = currentText;
+                        case 0:
+                        case 1:
+                        case 2:
+                            float cord = float.Parse(currentText);
+                            UpdateSphereCoordinate(index, mod, cord);
+                            break;
+                        case 3:
+                        case 4:
+                            float radius = float.Parse(currentText);
+                            UpdateObjectRadius(index, mod, radius);
+                            break;
+                        case 5:
+                            Spheres.SetSpheresText(index, currentText);
+                            break;
                     }
-                    catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException)
-                    {
-                        textBox.Text = (string)textBox.Tag;
-                    }
+                    textBox.Tag = currentText;
                 }
-                if (mod is 4)
+                catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException)
                 {
-                    Spheres.SetSpheresText(index, currentText);
+                    textBox.Text = (string)textBox.Tag;
                 }
+
+
+    
             };
 
             flowPanel.Controls.Add(label);
