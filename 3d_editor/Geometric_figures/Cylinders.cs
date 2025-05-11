@@ -304,12 +304,12 @@ namespace _3d_editor.Geometric_figures
                 Vector3 point1 = aOneCylinder.Point1;
                 Vector3 point2 = aOneCylinder.Point2;
 
-                if ((point1 - spherePos).Length <= radius)
+                if ((point1 - spherePos).Length < radius)
                 {
                     list.Add((i, true));
                 }
 
-                if ((point2 - spherePos).Length <= radius)
+                if ((point2 - spherePos).Length < radius)
                 {
                     list.Add((i, false));
                 }

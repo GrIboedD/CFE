@@ -562,9 +562,12 @@ namespace _3d_editor
                     try
                     {
                         float value = float.Parse(currentText);
-                        textBox.Tag = currentText;
                         if (mod is 3)
                         {
+                            if (value <= 0)
+                            {
+                                throw new ArgumentException("Radius is zero or negative");
+                            }
                             Spheres.SetSpheresRadius(index, value);
                         }
                         else if (mod is 0 or 1 or 2)
@@ -588,8 +591,9 @@ namespace _3d_editor
                             Spheres.SetSpheresCenterCord(index, newPos);
                             Cylinders.MoveCylindersWithSphere(oldPos, radius, moveVector);
                         }
+                        textBox.Tag = currentText;
                     }
-                    catch
+                    catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException)
                     {
                         textBox.Text = (string)textBox.Tag;
                     }

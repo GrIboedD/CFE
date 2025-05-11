@@ -125,7 +125,7 @@ namespace _3d_editor
                 numericUpDown1.Increment = (decimal)step;
                 textBox1.Tag = value;
             }
-            catch
+            catch (FormatException)
             {
                 textBox1.Text = (string)textBox1.Tag;
             }

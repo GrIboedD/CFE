@@ -112,6 +112,30 @@ namespace _3d_editor.Geometric_figures
 
         }
 
+        private bool isTheSphereOverlappingAnother(OneSphere targetSphere)
+        {
+            Vector3 targetSpherePos = targetSphere.Position;
+            float targetSphereradius = targetSphere.Radius;
+            foreach (var aSphere in SpheresList)
+            {
+                if (targetSphere == aSphere)
+                {
+                    continue;
+                }
+
+                Vector3 spherePos = aSphere.Position;
+                float sphereRadius = aSphere.Radius;
+
+                float distance = (spherePos - targetSpherePos).Length;
+
+                if (distance < targetSphereradius + sphereRadius)
+                {
+                    return true;
+                }
+
+            }
+            return false;
+        }
         public void CreateNewSphere(Vector3 position, float radius, Color color, string text = "")
         {
             var vec4Color = new Vector4(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, 1);
@@ -249,7 +273,13 @@ namespace _3d_editor.Geometric_figures
 
         public void SetSpheresCenterCord(int index, Vector3 pos)
         {
+            Vector3 oldPos = SpheresList[index].Position;
             SpheresList[index].SetPosition(pos.X, pos.Y, pos.Z);
+            if (isTheSphereOverlappingAnother(SpheresList[index]))
+            {
+                SpheresList[index].SetPosition(oldPos.X, oldPos.Y, oldPos.Z);
+                throw new InvalidOperationException("The sphere overlaps another sphere");
+            }
         }
 
         public float GetSpheresRadius(int index)
@@ -259,7 +289,13 @@ namespace _3d_editor.Geometric_figures
 
         public void SetSpheresRadius(int index, float radius)
         {
+            float oldRadius = SpheresList[index].Radius;
             SpheresList[index].SetRadius(radius);
+            if (isTheSphereOverlappingAnother(SpheresList[index]))
+            {
+                SpheresList[index].SetRadius(oldRadius);
+                throw new InvalidOperationException("The sphere overlaps another sphere");
+            }
         }
 
         public Vector4 GetSpheresColor(int index)
@@ -299,6 +335,7 @@ namespace _3d_editor.Geometric_figures
         {
             SpheresList.Clear();
         }
+
 
     }
 }
