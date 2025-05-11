@@ -10,23 +10,6 @@ namespace _3d_editor
             InitializeComponent();
         }
 
-        private void OpenGL_Window_Load(object sender, EventArgs e)
-        {
-            OpenGL_Window.DoLoad(flowLayoutPanel1);
-            OpenGL_Window.MouseWheel += OpenGL_Window_MouseWheel;
-        }
-
-        private void OpenGL_Window_Paint(object sender, PaintEventArgs e)
-        {
-            OpenGL_Window.UpdateFrame();
-            OpenGL_Window.RenderFrame();
-        }
-
-        private void OpenGL_Window_Resize(object sender, EventArgs e)
-        {
-            OpenGL_Window.DoResize();
-        }
-
         private void Form1_Load(object sender, EventArgs e)
         {
             timer.Interval = 1;
@@ -44,6 +27,23 @@ namespace _3d_editor
         {
             OpenGL_Window.UpdateFrame();
             OpenGL_Window.RenderFrame();
+        }
+
+        private void OpenGL_Window_Load(object sender, EventArgs e)
+        {
+            OpenGL_Window.DoLoad(flowLayoutPanel1);
+            OpenGL_Window.MouseWheel += OpenGL_Window_MouseWheel;
+        }
+
+        private void OpenGL_Window_Paint(object sender, PaintEventArgs e)
+        {
+            OpenGL_Window.UpdateFrame();
+            OpenGL_Window.RenderFrame();
+        }
+
+        private void OpenGL_Window_Resize(object sender, EventArgs e)
+        {
+            OpenGL_Window.DoResize();
         }
 
         private void OpenGL_Window_Click(object sender, EventArgs e)
@@ -85,7 +85,6 @@ namespace _3d_editor
         {
             OpenGL_Window.MouseWheelProcessing(e);
         }
-
 
         private void ToolStripMenuItem_Click(object sender, EventArgs e)
         {

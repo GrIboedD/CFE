@@ -163,11 +163,8 @@ namespace _3d_editor.Geometric_figures
             Shader.SetMatrix("model", tempSphere.ModelMatrix);
             Shader.SetMatrix("normalMatrix", tempSphere.NormalMatrix);
 
-            //GL.Disable(EnableCap.DepthTest);
 
             GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
-
-            //GL.Enable(EnableCap.DepthTest);
             GL.Disable(EnableCap.StencilTest);
         }
 

@@ -481,33 +481,35 @@ namespace _3d_editor
 
         private void AddColorPicker(string labelText, Vector4 color, int index, int mod)
         {
-            var label = new Label();
-            label.Text = labelText;
-            label.Width = 100;
-            label.Margin = new Padding(3, 10, 3, 3);
+            var label = new Label
+            {
+                Text = labelText,
+                Width = 100,
+                Margin = new Padding(3, 10, 3, 3)
+            };
 
-            var colorPanel = new Panel();
-            colorPanel.Width = 100;
-            colorPanel.Height = 20;
-            colorPanel.BackColor = ConvertVector4ToColor(color);
-            colorPanel.BorderStyle = BorderStyle.FixedSingle;
-            colorPanel.Cursor = Cursors.Hand;
-            colorPanel.Margin = new Padding(3, 10, 3, 3);
+            var colorPanel = new Panel
+            {
+                Width = 100,
+                Height = 20,
+                BackColor = ConvertVector4ToColor(color),
+                BorderStyle = BorderStyle.FixedSingle,
+                Cursor = Cursors.Hand,
+                Margin = new Padding(3, 10, 3, 3)
+            };
 
             colorPanel.Click += (sender, e) =>
             {
-                using (var colorDialog = new ColorDialog())
+                using var colorDialog = new ColorDialog();
+                colorDialog.Color = colorPanel.BackColor;
+                if (colorDialog.ShowDialog() == DialogResult.OK)
                 {
-                    colorDialog.Color = colorPanel.BackColor;
-                    if (colorDialog.ShowDialog() == DialogResult.OK)
-                    {
-                        colorPanel.BackColor = colorDialog.Color;
+                    colorPanel.BackColor = colorDialog.Color;
 
-                        Vector4 newColor = ConvertColorToVector4(colorDialog.Color);
-                        if (mod == 0)
-                        {
-                            Spheres.SetSphereColor(index, newColor);
-                        }
+                    Vector4 newColor = ConvertColorToVector4(colorDialog.Color);
+                    if (mod == 0)
+                    {
+                        Spheres.SetSphereColor(index, newColor);
                     }
                 }
             };
@@ -517,7 +519,7 @@ namespace _3d_editor
             flowPanel.SetFlowBreak(colorPanel, true);
         }
 
-        private Color ConvertVector4ToColor(Vector4 vec)
+        private static Color ConvertVector4ToColor(Vector4 vec)
         {
             int r = (int)(vec.X * 255);
             int g = (int)(vec.Y * 255);
@@ -526,7 +528,7 @@ namespace _3d_editor
             return Color.FromArgb(a, r, g, b);
         }
 
-        private Vector4 ConvertColorToVector4(Color color)
+        private static Vector4 ConvertColorToVector4(Color color)
         {
             return new Vector4(
                 color.R / 255f,
@@ -538,16 +540,20 @@ namespace _3d_editor
 
         private void AddLabelAndTextBox(string labelText, string textBoxText, int index, int mod)
         {
-            var label = new Label();
-            label.Text = labelText;
-            label.Width = 100;
-            label.Margin = new Padding(3, 10, 3, 3);
+            var label = new Label
+            {
+                Text = labelText,
+                Width = 100,
+                Margin = new Padding(3, 10, 3, 3)
+            };
 
-            var textBox = new TextBox();
-            textBox.Text = textBoxText;
-            textBox.Tag = textBoxText;
-            textBox.Width = 100;
-            textBox.Margin = new Padding(3, 10, 3, 3);
+            var textBox = new TextBox
+            {
+                Text = textBoxText,
+                Tag = textBoxText,
+                Width = 100,
+                Margin = new Padding(3, 10, 3, 3)
+            };
             textBox.TextChanged += (s, e) =>
             {
                 string currentText = textBox.Text;
@@ -576,7 +582,11 @@ namespace _3d_editor
                                     newPos.Z = value;
                                     break;
                             }
+                            Vector3 oldPos = Spheres.GetSpheresCenterCord(index);
+                            float radius = Spheres.GetSpheresRadius(index);
+                            Vector3 moveVector = newPos - oldPos;
                             Spheres.SetSpheresCenterCord(index, newPos);
+                            Cylinders.MoveCylindersWithSphere(oldPos, radius, moveVector);
                         }
                     }
                     catch

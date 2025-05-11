@@ -295,6 +295,48 @@ namespace _3d_editor.Geometric_figures
             }
         }
         
+        private List<(int index, bool isPoint1)> GetCylindersPointsInSphere(Vector3 spherePos, float radius)
+        {
+            var list = new List<(int index, bool isPoint1)> ();
+            for (int i = 0; i < CylindersList.Count; i++)
+            {
+                var aOneCylinder = CylindersList[i];
+                Vector3 point1 = aOneCylinder.Point1;
+                Vector3 point2 = aOneCylinder.Point2;
+
+                if ((point1 - spherePos).Length <= radius)
+                {
+                    list.Add((i, true));
+                }
+
+                if ((point2 - spherePos).Length <= radius)
+                {
+                    list.Add((i, false));
+                }
+            }
+            return list;
+        }
+
+        public void MoveCylindersWithSphere(Vector3 spherePos, float radius, Vector3 moveVector)
+        {
+            List<(int index, bool isPoint1)> list = GetCylindersPointsInSphere(spherePos, radius);
+            foreach (var item in list)
+            {
+                int index = item.index;
+                bool isPoint1 = item.isPoint1;
+                Vector3 point = isPoint1 ? CylindersList[index].Point1 : CylindersList[index].Point2;
+                Vector3 newPoint = point + moveVector;
+                
+                if (isPoint1)
+                {
+                    CylindersList[index].SetPoint1(newPoint);
+                }
+                else
+                {
+                    CylindersList[index].SetPoint2(newPoint);
+                }
+            }
+        }
 
         private class OneCylinder
         {
@@ -304,8 +346,8 @@ namespace _3d_editor.Geometric_figures
             public Matrix4 ModelMatrix { get; private set; }
             public Matrix3 NormalMatrix { get; private set; }
 
-            public Vector3 Point1 { get; init; }
-            public Vector3 Point2 { get; init; }
+            public Vector3 Point1 { get; private set; }
+            public Vector3 Point2 { get; private set; }
 
             public OneCylinder(Vector3 Point1, Vector3 Point2, float radius, Vector4 color)
             {
@@ -316,6 +358,17 @@ namespace _3d_editor.Geometric_figures
                 CalculateModelAndNormalMatrix();
             }
 
+            public void SetPoint1(Vector3 newPoint)
+            {
+                this.Point1 = newPoint;
+                CalculateModelAndNormalMatrix();
+            }
+
+            public void SetPoint2(Vector3 newPoint)
+            {
+                this.Point2 = newPoint;
+                CalculateModelAndNormalMatrix();
+            }
             private void CalculateModelAndNormalMatrix()
             {
                 Vector3 direction = Point2 - Point1;
