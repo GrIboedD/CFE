@@ -6,6 +6,7 @@ using OpenTK.Mathematics;
 using System;
 using System.ComponentModel;
 using System.Data;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -650,6 +651,48 @@ namespace _3d_editor
             flowPanel.Height = 0;
             pickedIndex = -1;
         }
+
+        private void TextBoxProceedValue(TextBox textBox, int mod, int index)
+        {
+            string currentText = textBox.Text;
+            try
+            {
+                switch (mod)
+                {
+                    case 0:
+                    case 1:
+                    case 2:
+                        float cord = float.Parse(currentText.Replace('.', ','));
+                        UpdateSphereCoordinate(index, mod, cord);
+                        break;
+                    case 3:
+                    case 4:
+                        float radius = float.Parse(currentText.Replace('.', ','));
+                        UpdateObjectRadius(index, mod, radius);
+                        break;
+                    case 5:
+                        Spheres.SetSpheresText(index, currentText);
+                        break;
+                }
+                textBox.Tag = currentText;
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show("Неверный формат числа!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (InvalidOperationException)
+            {
+                MessageBox.Show("Изменение параметров ведет к пересечению сфер!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (ArgumentException)
+            {
+                MessageBox.Show("Радиус должен быть больше 0!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                textBox.Text = (string)textBox.Tag;
+            }
+        }
         private void AddLabelAndTextBox(string labelText, string textBoxText, int index, int mod)
         {
             var label = new Label
@@ -666,37 +709,20 @@ namespace _3d_editor
                 Width = 100,
                 Margin = new Padding(3, 10, 3, 3)
             };
-            textBox.TextChanged += (s, e) =>
+
+            textBox.KeyDown += (s, e) =>
             {
-                string currentText = textBox.Text;
-                try
+                if (e.KeyCode != Keys.Enter)
                 {
-                    switch (mod)
-                    {
-                        case 0:
-                        case 1:
-                        case 2:
-                            float cord = float.Parse(currentText);
-                            UpdateSphereCoordinate(index, mod, cord);
-                            break;
-                        case 3:
-                        case 4:
-                            float radius = float.Parse(currentText);
-                            UpdateObjectRadius(index, mod, radius);
-                            break;
-                        case 5:
-                            Spheres.SetSpheresText(index, currentText);
-                            break;
-                    }
-                    textBox.Tag = currentText;
+                    return;
                 }
-                catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException)
-                {
-                    textBox.Text = (string)textBox.Tag;
-                }
+                TextBoxProceedValue(textBox, mod, index);
+                e.SuppressKeyPress = true;
+            };
 
-
-    
+            textBox.Leave += (s, e) =>
+            {
+                TextBoxProceedValue(textBox, mod, index);
             };
 
             flowPanel.Controls.Add(label);

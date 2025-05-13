@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Globalization;
 
 namespace _3d_editor
 {
@@ -116,12 +117,31 @@ namespace _3d_editor
 
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+
+        private void textBox1_ChangeValue_focus_leave(object sender, EventArgs e)
+        {
+            textBox1_ChangeValue();
+        }
+
+        private void textBox1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+            {
+                return;
+            }
+            textBox1_ChangeValue();
+        }
+
+        private void textBox1_ChangeValue()
         {
             string value = textBox1.Text;
             try
             {
-                float step = float.Parse(value);
+                float step = float.Parse(value.Replace('.',','));
+                if (step < 0.2f || step > 2)
+                {
+                    throw new ArgumentException();
+                }
                 OpenGL_Window.SetGridStep(step);
                 numericUpDown1.Increment = (decimal)step;
                 textBox1.Tag = value;
@@ -129,19 +149,36 @@ namespace _3d_editor
             catch (FormatException)
             {
                 textBox1.Text = (string)textBox1.Tag;
+                MessageBox.Show("Неверный формат числа!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (ArgumentException)
+            {
+                textBox1.Text = (string)textBox1.Tag;
+                MessageBox.Show("Шаг сетки от 0.2 до 2!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
             float level = (float)numericUpDown1.Value;
-            OpenGL_Window.SetGridLevel(level);
+            float step = (float)numericUpDown1.Increment;
+            int numberOfSteps = (int)Math.Round(level / step);
+            numericUpDown1.Value = (decimal)(numberOfSteps * step);
+            OpenGL_Window.SetGridLevel(numberOfSteps * step);
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
             OpenGL_Window.Cursor = Cursors.Cross;
             OpenGL_Window.EnableDeleteMode();
+        }
+
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                e.Handled = true;
+            }
         }
     }
 }
