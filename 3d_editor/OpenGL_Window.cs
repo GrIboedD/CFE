@@ -294,8 +294,6 @@ namespace _3d_editor
                 return;
             }
 
-            flowPanel.Controls.Clear();
-
             int sphereIndex;
             float sphereDist;
 
@@ -322,11 +320,11 @@ namespace _3d_editor
                     pickedIndex = closetCandidate.Item1;
                     if (isSpherePicked)
                     {
-                        fillFlowPanelBySphere(pickedIndex);
+                        fillFlowPanelBySphere();
                     }
                     else
                     {
-                        fillFlowPanelByCylinder(pickedIndex);
+                        fillFlowPanelByCylinder();
                     }
                 }
             }
@@ -342,12 +340,28 @@ namespace _3d_editor
                 bool isSpherePicked = closetCandidate.Item3;
                 int pickedIndex = closetCandidate.Item1;
 
+                if (pickedIndex == this.pickedIndex && isSpherePicked == this.isSpherePicked)
+                {
+                    clearFlowPanel();
+                }
+                else if (pickedIndex < this.pickedIndex && isSpherePicked == this.isSpherePicked)
+                {
+                    this.pickedIndex--;
+                }    
+
+
                 if (isSpherePicked)
                 {
                     Vector3 spherePos = Spheres.GetSpheresCenterCord(pickedIndex);
                     float radius = Spheres.GetSpheresRadius(pickedIndex);
                     List<int> cylinderIndicesInSphere = Cylinders.GetCylindersIndeciesInSphere(spherePos, radius);
                     cylinderIndicesInSphere = [.. cylinderIndicesInSphere.OrderDescending()];
+
+                    if (!this.isSpherePicked && cylinderIndicesInSphere.Contains(this.pickedIndex))
+                    {
+                        clearFlowPanel();
+                    }
+
                     foreach (int index in cylinderIndicesInSphere)
                     {
                         Cylinders.DelCylinderByIndex(index);
@@ -358,6 +372,8 @@ namespace _3d_editor
                 {
                     Cylinders.DelCylinderByIndex(pickedIndex);
                 }
+
+
 
             }
 
@@ -546,59 +562,53 @@ namespace _3d_editor
 
         public void EnableDeleteMode()
         {
-            clearFlowPanel();
             SetPickObjSettings();
             currentRayCastingObjectMod = RayCastingObjectMod.delete;
         }
 
         public void EnableConnectionMode()
         {
-            if (pickedIndex < 0 || !isSpherePicked)
-            {
-                MessageBox.Show("Выберите начальную сферу для создания соедиений!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
             SetPickObjSettings();
             currentRayCastingObjectMod = RayCastingObjectMod.connect;
         }
 
 
-        private void fillFlowPanelBySphere(int index)
+        private void fillFlowPanelBySphere()
         {
             flowPanel.Controls.Clear();
-            Vector3 position = Spheres.GetSpheresCenterCord(index);
-            float radius = Spheres.GetSpheresRadius(index);
-            Vector4 color = Spheres.GetSpheresColor(index);
-            string text = Spheres.GetSpheresText(index);
+            Vector3 position = Spheres.GetSpheresCenterCord(pickedIndex);
+            float radius = Spheres.GetSpheresRadius(pickedIndex);
+            Vector4 color = Spheres.GetSpheresColor(pickedIndex);
+            string text = Spheres.GetSpheresText(pickedIndex);
 
-            AddLabelAndTextBox("Position X:", position.X.ToString("F2"), index, 0);
-            AddLabelAndTextBox("Position Y:", position.Y.ToString("F2"), index, 1);
-            AddLabelAndTextBox("Position Z:", position.Z.ToString("F2"), index, 2);
+            AddLabelAndTextBox("Position X:", position.X.ToString("F2"), 0);
+            AddLabelAndTextBox("Position Y:", position.Y.ToString("F2"), 1);
+            AddLabelAndTextBox("Position Z:", position.Z.ToString("F2"), 2);
 
-            AddLabelAndTextBox("Radius:", radius.ToString("F2"), index, 3);
+            AddLabelAndTextBox("Radius:", radius.ToString("F2"), 3);
 
-            AddColorPicker("Color:", color, index, 0);
+            AddColorPicker("Color:", color, 0);
 
-            AddLabelAndTextBox("Text:", text, index, 5);
+            AddLabelAndTextBox("Text:", text, 5);
 
             flowPanel.Height = 245;
         }
 
-        private void fillFlowPanelByCylinder(int index)
+        private void fillFlowPanelByCylinder()
         {
             flowPanel.Controls.Clear();
 
-            float radius = Cylinders.GetCylinderRadius(index);
-            Vector4 color = Cylinders.GetCylinderColor(index);
+            float radius = Cylinders.GetCylinderRadius(pickedIndex);
+            Vector4 color = Cylinders.GetCylinderColor(pickedIndex);
 
-            AddLabelAndTextBox("Radius:", radius.ToString("F2"), index, 4);
+            AddLabelAndTextBox("Radius:", radius.ToString("F2"), 4);
 
-            AddColorPicker("Color:", color, index, 1);
+            AddColorPicker("Color:", color, 1);
 
             flowPanel.Height = 85;
         }
 
-        private void AddColorPicker(string labelText, Vector4 color, int index, int mod)
+        private void AddColorPicker(string labelText, Vector4 color, int mod)
         {
             var label = new Label
             {
@@ -629,10 +639,10 @@ namespace _3d_editor
                     switch (mod)
                     {
                         case 0:
-                            Spheres.SetSphereColor(index, newColor);
+                            Spheres.SetSphereColor(pickedIndex, newColor);
                             break;
                         case 1:
-                            Cylinders.SetCylinderColor(index, newColor);
+                            Cylinders.SetCylinderColor(pickedIndex, newColor);
                             break;
                     }
                 }
@@ -662,9 +672,9 @@ namespace _3d_editor
             );
         }
 
-        private void UpdateSphereCoordinate(int index, int coordIndex, float value)
+        private void UpdateSphereCoordinate(int coordIndex, float value)
         {
-            Vector3 newPos = Spheres.GetSpheresCenterCord(index);
+            Vector3 newPos = Spheres.GetSpheresCenterCord(pickedIndex);
             switch (coordIndex)
             {
                 case 0:
@@ -677,14 +687,14 @@ namespace _3d_editor
                     newPos.Z = value;
                     break;
             }
-            Vector3 oldPos = Spheres.GetSpheresCenterCord(index);
-            float radius = Spheres.GetSpheresRadius(index);
+            Vector3 oldPos = Spheres.GetSpheresCenterCord(pickedIndex);
+            float radius = Spheres.GetSpheresRadius(pickedIndex);
             Vector3 moveVector = newPos - oldPos;
-            Spheres.SetSpheresCenterCord(index, newPos);
+            Spheres.SetSpheresCenterCord(pickedIndex, newPos);
             Cylinders.MoveCylindersWithSphere(oldPos, radius, moveVector);
         }
 
-        private void UpdateObjectRadius(int index, int mod, float radius)
+        private void UpdateObjectRadius(int mod, float radius)
         {
             if (radius <= 0)
             {
@@ -694,10 +704,10 @@ namespace _3d_editor
             switch (mod)
             {
                 case 3:
-                    Spheres.SetSpheresRadius(index, radius);
+                    Spheres.SetSpheresRadius(pickedIndex, radius);
                     break;
                 case 4:
-                    Cylinders.SetCylinderRadius(index, radius);
+                    Cylinders.SetCylinderRadius(pickedIndex, radius);
                     break;
 
             }
@@ -709,7 +719,7 @@ namespace _3d_editor
             pickedIndex = -1;
         }
 
-        private void TextBoxProceedValue(TextBox textBox, int mod, int index)
+        private void TextBoxProceedValue(TextBox textBox, int mod)
         {
             string currentText = textBox.Text;
             try
@@ -720,15 +730,15 @@ namespace _3d_editor
                     case 1:
                     case 2:
                         float cord = float.Parse(currentText.Replace('.', ','));
-                        UpdateSphereCoordinate(index, mod, cord);
+                        UpdateSphereCoordinate(mod, cord);
                         break;
                     case 3:
                     case 4:
                         float radius = float.Parse(currentText.Replace('.', ','));
-                        UpdateObjectRadius(index, mod, radius);
+                        UpdateObjectRadius(mod, radius);
                         break;
                     case 5:
-                        Spheres.SetSpheresText(index, currentText);
+                        Spheres.SetSpheresText(pickedIndex, currentText);
                         break;
                 }
                 textBox.Tag = currentText;
@@ -750,7 +760,7 @@ namespace _3d_editor
                 textBox.Text = (string)textBox.Tag;
             }
         }
-        private void AddLabelAndTextBox(string labelText, string textBoxText, int index, int mod)
+        private void AddLabelAndTextBox(string labelText, string textBoxText, int mod)
         {
             var label = new Label
             {
@@ -773,13 +783,13 @@ namespace _3d_editor
                 {
                     return;
                 }
-                TextBoxProceedValue(textBox, mod, index);
+                TextBoxProceedValue(textBox, mod);
                 e.SuppressKeyPress = true;
             };
 
             textBox.Leave += (s, e) =>
             {
-                TextBoxProceedValue(textBox, mod, index);
+                TextBoxProceedValue(textBox, mod);
             };
 
             flowPanel.Controls.Add(label);
