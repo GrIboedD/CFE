@@ -336,6 +336,11 @@ namespace _3d_editor.Geometric_figures
             SpheresList.Clear();
         }
 
+        public void DelSphereByIndex(int index)
+        {
+            SpheresList.RemoveAt(index);
+        }
+
 
     }
 }

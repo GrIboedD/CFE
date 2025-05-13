@@ -173,9 +173,9 @@
             panel1.Controls.Add(flowLayoutPanel1);
             panel1.Controls.Add(panel2);
             panel1.Controls.Add(flowLayoutPanel2);
-            panel1.Location = new Point(773, 28);
+            panel1.Location = new Point(781, 28);
             panel1.Name = "panel1";
-            panel1.Size = new Size(244, 164);
+            panel1.Size = new Size(236, 164);
             panel1.TabIndex = 4;
             // 
             // flowLayoutPanel1
@@ -184,7 +184,7 @@
             flowLayoutPanel1.Dock = DockStyle.Top;
             flowLayoutPanel1.Location = new Point(0, 160);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(242, 0);
+            flowLayoutPanel1.Size = new Size(234, 0);
             flowLayoutPanel1.TabIndex = 4;
             // 
             // panel2
@@ -197,7 +197,7 @@
             panel2.Dock = DockStyle.Top;
             panel2.Location = new Point(0, 48);
             panel2.Name = "panel2";
-            panel2.Size = new Size(242, 112);
+            panel2.Size = new Size(234, 112);
             panel2.TabIndex = 3;
             // 
             // textBox1
@@ -248,7 +248,7 @@
             flowLayoutPanel2.Dock = DockStyle.Top;
             flowLayoutPanel2.Location = new Point(0, 0);
             flowLayoutPanel2.Name = "flowLayoutPanel2";
-            flowLayoutPanel2.Size = new Size(242, 48);
+            flowLayoutPanel2.Size = new Size(234, 48);
             flowLayoutPanel2.TabIndex = 2;
             // 
             // button1
@@ -302,6 +302,7 @@
             button5.Size = new Size(40, 40);
             button5.TabIndex = 4;
             button5.UseVisualStyleBackColor = true;
+            button5.Click += button5_Click;
             // 
             // CFE
             // 

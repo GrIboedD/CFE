@@ -6,6 +6,7 @@ using OpenTK.Mathematics;
 using System;
 using System.ComponentModel;
 using System.Data;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -70,6 +71,13 @@ namespace _3d_editor
             {"middleMouse", false },
         };
 
+        private enum RayCastingObjectMod
+        {
+            change,
+            delete,
+        }
+
+        private RayCastingObjectMod currentRayCastingObjectMod = RayCastingObjectMod.change;
 
         private int lastMouseX = 0;
         private int lastMouseY = 0;
@@ -267,6 +275,8 @@ namespace _3d_editor
             lastMouseY = currentMouseY;
         }
 
+
+
         public void MouseDownProcessing(MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Middle)
@@ -298,42 +308,71 @@ namespace _3d_editor
                     (sphereIndex, sphereDist) = Spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
 
                     (cylinderIndex, cylinderDist) = Cylinders.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
-                    
 
+                    List<(int, float, bool)> candidates = [(sphereIndex, sphereDist, true), (cylinderIndex, cylinderDist, false)];
+                    var validCandidates = candidates.Where(x => x.Item1 >= 0).ToList();
 
-                    if (sphereIndex == -1 && cylinderIndex == -1)
+                    void changeAction()
                     {
-                        flowPanel.Controls.Clear();
-                        flowPanel.Height = 0;
-                        pickedIndex = -1;
-                    }
-                    else if (sphereIndex == -1)
-                    {
-                        fillFlowPanelByCylinder(cylinderIndex);
-                        pickedIndex = cylinderIndex;
-                        isSpherePicked = false;
-                    }
-                    else if (cylinderIndex == -1)
-                    {
-                        fillFlowPanelBySphere(sphereIndex);
-                        pickedIndex = sphereIndex;
-                        isSpherePicked = true;
-                    }
-                    else
-                    {
-                        if (cylinderDist < sphereDist)
+                        if (validCandidates.Count == 0)
                         {
-                            fillFlowPanelByCylinder(cylinderIndex);
-                            pickedIndex = cylinderIndex;
-                            isSpherePicked = false;
+                            clearFlowPanel();
                         }
                         else
                         {
-                            fillFlowPanelBySphere(sphereIndex);
-                            pickedIndex = sphereIndex;
-                            isSpherePicked = true;
+                            var closetCandidate = validCandidates.MinBy(x => x.Item2);
+                            isSpherePicked = closetCandidate.Item3;
+                            pickedIndex = closetCandidate.Item1;
+                            if (isSpherePicked)
+                            {
+                                fillFlowPanelBySphere(pickedIndex);
+                            }
+                            else
+                            {
+                                fillFlowPanelByCylinder(pickedIndex);
+                            }
                         }
                     }
+
+                    void deleteAction()
+                    {
+                        if (validCandidates.Count == 0)
+                        {
+                            return;
+                        }
+
+                        var closetCandidate = validCandidates.MinBy(x => x.Item2);
+                        bool isSpherePicked = closetCandidate.Item3;
+                        int pickedIndex = closetCandidate.Item1;
+
+                        if (isSpherePicked)
+                        {
+                            Vector3 spherePos = Spheres.GetSpheresCenterCord(pickedIndex);
+                            float radius = Spheres.GetSpheresRadius(pickedIndex);
+                            List<int> cylinderIndicesInSphere = Cylinders.GetCylindersIndeciesInSphere(spherePos, radius);
+                            cylinderIndicesInSphere = [.. cylinderIndicesInSphere.OrderDescending()];
+                            foreach (int index in cylinderIndicesInSphere)
+                            {
+                                Cylinders.DelCylinderByIndex(index);
+                            }
+                            Spheres.DelSphereByIndex(pickedIndex);
+                        }
+                        else
+                        {
+                            Cylinders.DelCylinderByIndex(pickedIndex);
+                        }
+
+                    }
+
+                    Dictionary<RayCastingObjectMod, Action> actions = new()
+                    {
+                        {RayCastingObjectMod.change,  changeAction},
+                        {RayCastingObjectMod.delete, deleteAction }
+                    };
+
+                    actions[currentRayCastingObjectMod]();
+                    
+                  
                 }
 
                 if (CoordGridEnable && RayCastingGridEnable)
@@ -437,11 +476,32 @@ namespace _3d_editor
             return CoordinateGrid.step;
         }
 
-        public void EnableClickMode()
+
+        private void SetPickObjSettings()
         {
-            LeftMouseMoveEnable = true;
+            LeftMouseMoveEnable = false;
             RayCastingObjectEnable = true;
             RayCastingGridEnable = false;
+        }
+
+        public void EnableClickMode()
+        {
+            SetPickObjSettings();
+            currentRayCastingObjectMod = RayCastingObjectMod.change;
+        }
+
+        public void EnableMoveMode()
+        {
+            LeftMouseMoveEnable = true;
+            RayCastingObjectEnable = false;
+            RayCastingGridEnable = false;
+        }
+
+        public void EnableDeleteMode()
+        {
+            clearFlowPanel();
+            SetPickObjSettings();
+            currentRayCastingObjectMod = RayCastingObjectMod.delete;
         }
 
 
@@ -584,7 +644,12 @@ namespace _3d_editor
 
             }
         }
-
+        void clearFlowPanel()
+        {
+            flowPanel.Controls.Clear();
+            flowPanel.Height = 0;
+            pickedIndex = -1;
+        }
         private void AddLabelAndTextBox(string labelText, string textBoxText, int index, int mod)
         {
             var label = new Label

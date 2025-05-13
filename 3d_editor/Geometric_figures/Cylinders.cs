@@ -1,5 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 
 namespace _3d_editor.Geometric_figures
@@ -323,6 +324,11 @@ namespace _3d_editor.Geometric_figures
             return false;
         }
 
+        public void DelCylinderByIndex(int index)
+        {
+            CylindersList.RemoveAt(index);
+        }
+
         public void DelAllCylinders()
         {
             CylindersList.Clear();
@@ -360,6 +366,12 @@ namespace _3d_editor.Geometric_figures
                 }
             }
             return list;
+        }
+
+        public List<int> GetCylindersIndeciesInSphere(Vector3 spherePos, float radius)
+        {
+            List<(int index, bool isPoint1)> list = GetCylindersPointsInSphere(spherePos, radius);
+            return [.. list.Select(x => x.index)];
         }
 
         public void MoveCylindersWithSphere(Vector3 spherePos, float radius, Vector3 moveVector)

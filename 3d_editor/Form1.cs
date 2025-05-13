@@ -106,12 +106,13 @@ namespace _3d_editor
         private void button2_Click(object sender, EventArgs e)
         {
             OpenGL_Window.Cursor = Cursors.SizeAll;
-
+            OpenGL_Window.EnableMoveMode();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             OpenGL_Window.Cursor = Cursors.Default;
+            OpenGL_Window.EnableClickMode();
 
         }
 
@@ -137,5 +138,10 @@ namespace _3d_editor
             OpenGL_Window.SetGridLevel(level);
         }
 
+        private void button5_Click(object sender, EventArgs e)
+        {
+            OpenGL_Window.Cursor = Cursors.Cross;
+            OpenGL_Window.EnableDeleteMode();
+        }
     }
 }
