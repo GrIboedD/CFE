@@ -76,6 +76,7 @@ namespace _3d_editor
         {
             change,
             delete,
+            connect,
         }
 
         private RayCastingObjectMod currentRayCastingObjectMod = RayCastingObjectMod.change;
@@ -276,7 +277,135 @@ namespace _3d_editor
             lastMouseY = currentMouseY;
         }
 
+        private void RayCastingGridProceed(MouseEventArgs e)
+        {
+            if (!CoordGridEnable || !RayCastingGridEnable)
+            {
+                return;
+            }
 
+            CoordinateGrid.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+        }
+
+        private void RayCastingObgProceed(MouseEventArgs e)
+        {
+            if (!RayCastingObjectEnable)
+            {
+                return;
+            }
+
+            flowPanel.Controls.Clear();
+
+            int sphereIndex;
+            float sphereDist;
+
+            int cylinderIndex;
+            float cylinderDist;
+
+            (sphereIndex, sphereDist) = Spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+
+            (cylinderIndex, cylinderDist) = Cylinders.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+
+            List<(int, float, bool)> candidates = [(sphereIndex, sphereDist, true), (cylinderIndex, cylinderDist, false)];
+            var validCandidates = candidates.Where(x => x.Item1 >= 0).ToList();
+
+            void changeAction()
+            {
+                if (validCandidates.Count == 0)
+                {
+                    clearFlowPanel();
+                }
+                else
+                {
+                    var closetCandidate = validCandidates.MinBy(x => x.Item2);
+                    isSpherePicked = closetCandidate.Item3;
+                    pickedIndex = closetCandidate.Item1;
+                    if (isSpherePicked)
+                    {
+                        fillFlowPanelBySphere(pickedIndex);
+                    }
+                    else
+                    {
+                        fillFlowPanelByCylinder(pickedIndex);
+                    }
+                }
+            }
+
+            void deleteAction()
+            {
+                if (validCandidates.Count == 0)
+                {
+                    return;
+                }
+
+                var closetCandidate = validCandidates.MinBy(x => x.Item2);
+                bool isSpherePicked = closetCandidate.Item3;
+                int pickedIndex = closetCandidate.Item1;
+
+                if (isSpherePicked)
+                {
+                    Vector3 spherePos = Spheres.GetSpheresCenterCord(pickedIndex);
+                    float radius = Spheres.GetSpheresRadius(pickedIndex);
+                    List<int> cylinderIndicesInSphere = Cylinders.GetCylindersIndeciesInSphere(spherePos, radius);
+                    cylinderIndicesInSphere = [.. cylinderIndicesInSphere.OrderDescending()];
+                    foreach (int index in cylinderIndicesInSphere)
+                    {
+                        Cylinders.DelCylinderByIndex(index);
+                    }
+                    Spheres.DelSphereByIndex(pickedIndex);
+                }
+                else
+                {
+                    Cylinders.DelCylinderByIndex(pickedIndex);
+                }
+
+            }
+
+            void connectAction()
+            {
+                if (validCandidates.Count == 0)
+                {
+                    return;
+                }
+
+                var closetCandidate = validCandidates.MinBy(x => x.Item2);
+                bool isSpherePicked = closetCandidate.Item3;
+                int pickedIndex = closetCandidate.Item1;
+
+                if (!isSpherePicked)
+                {
+                    return;
+                }
+
+                Vector3 spherePos1 = Spheres.GetSpheresCenterCord(this.pickedIndex);
+                float radius1 = Spheres.GetSpheresRadius(this.pickedIndex);
+                Vector3 spherePos2 = Spheres.GetSpheresCenterCord(pickedIndex);
+                float radius2 = Spheres.GetSpheresRadius(pickedIndex);
+
+                int numberOfCylindersInConnection = Cylinders.GetCylindersCountBetweenTwoSpheres(spherePos1, radius1, spherePos2, radius2);
+                
+                if (numberOfCylindersInConnection > 0)
+                {
+                    MessageBox.Show("Соедние между сферами уже существует!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                Cylinders.CreateNewCylinder(spherePos1, spherePos2, 0.06f, Color.Black);
+            }
+
+            Dictionary<RayCastingObjectMod, Action> actions = new()
+                    {
+                        {RayCastingObjectMod.change,  changeAction},
+                        {RayCastingObjectMod.delete, deleteAction },
+                        {RayCastingObjectMod.connect, connectAction }
+                    };
+
+            actions[currentRayCastingObjectMod]();
+
+
+
+
+        }
 
         public void MouseDownProcessing(MouseEventArgs e)
         {
@@ -286,100 +415,17 @@ namespace _3d_editor
             if (e.Button == MouseButtons.Right)
                 keyStates["rightMouse"] = true;
 
-            lastMouseX = e.X;   
-            lastMouseY = e.Y;
-            currentMouseX = e.X;
-            currentMouseY = e.Y;    
-
             if (e.Button == MouseButtons.Left)
             {
                 keyStates["leftMouse"] = true;
-
-                if (RayCastingObjectEnable)
-                {
-
-                    flowPanel.Controls.Clear();
-
-                    int sphereIndex;
-                    float sphereDist;
-
-                    int cylinderIndex;
-                    float cylinderDist;
-
-                    (sphereIndex, sphereDist) = Spheres.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
-
-                    (cylinderIndex, cylinderDist) = Cylinders.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
-
-                    List<(int, float, bool)> candidates = [(sphereIndex, sphereDist, true), (cylinderIndex, cylinderDist, false)];
-                    var validCandidates = candidates.Where(x => x.Item1 >= 0).ToList();
-
-                    void changeAction()
-                    {
-                        if (validCandidates.Count == 0)
-                        {
-                            clearFlowPanel();
-                        }
-                        else
-                        {
-                            var closetCandidate = validCandidates.MinBy(x => x.Item2);
-                            isSpherePicked = closetCandidate.Item3;
-                            pickedIndex = closetCandidate.Item1;
-                            if (isSpherePicked)
-                            {
-                                fillFlowPanelBySphere(pickedIndex);
-                            }
-                            else
-                            {
-                                fillFlowPanelByCylinder(pickedIndex);
-                            }
-                        }
-                    }
-
-                    void deleteAction()
-                    {
-                        if (validCandidates.Count == 0)
-                        {
-                            return;
-                        }
-
-                        var closetCandidate = validCandidates.MinBy(x => x.Item2);
-                        bool isSpherePicked = closetCandidate.Item3;
-                        int pickedIndex = closetCandidate.Item1;
-
-                        if (isSpherePicked)
-                        {
-                            Vector3 spherePos = Spheres.GetSpheresCenterCord(pickedIndex);
-                            float radius = Spheres.GetSpheresRadius(pickedIndex);
-                            List<int> cylinderIndicesInSphere = Cylinders.GetCylindersIndeciesInSphere(spherePos, radius);
-                            cylinderIndicesInSphere = [.. cylinderIndicesInSphere.OrderDescending()];
-                            foreach (int index in cylinderIndicesInSphere)
-                            {
-                                Cylinders.DelCylinderByIndex(index);
-                            }
-                            Spheres.DelSphereByIndex(pickedIndex);
-                        }
-                        else
-                        {
-                            Cylinders.DelCylinderByIndex(pickedIndex);
-                        }
-
-                    }
-
-                    Dictionary<RayCastingObjectMod, Action> actions = new()
-                    {
-                        {RayCastingObjectMod.change,  changeAction},
-                        {RayCastingObjectMod.delete, deleteAction }
-                    };
-
-                    actions[currentRayCastingObjectMod]();
-                    
-                  
-                }
-
-                if (CoordGridEnable && RayCastingGridEnable)
-                    CoordinateGrid.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+                RayCastingObgProceed(e);
+                RayCastingGridProceed(e);
             }
-               
+
+                lastMouseX = e.X;   
+            lastMouseY = e.Y;
+            currentMouseX = e.X;
+            currentMouseY = e.Y;
         }
 
         public void MouseUpProcessing(MouseEventArgs e)
@@ -503,6 +549,17 @@ namespace _3d_editor
             clearFlowPanel();
             SetPickObjSettings();
             currentRayCastingObjectMod = RayCastingObjectMod.delete;
+        }
+
+        public void EnableConnectionMode()
+        {
+            if (pickedIndex < 0 || !isSpherePicked)
+            {
+                MessageBox.Show("Выберите начальную сферу для создания соедиений!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            SetPickObjSettings();
+            currentRayCastingObjectMod = RayCastingObjectMod.connect;
         }
 
 
@@ -697,7 +754,7 @@ namespace _3d_editor
         {
             var label = new Label
             {
-                Text = labelText,
+                Text = labelText,   
                 Width = 100,
                 Margin = new Padding(3, 10, 3, 3)
             };

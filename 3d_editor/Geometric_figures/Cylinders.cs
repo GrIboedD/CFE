@@ -374,6 +374,15 @@ namespace _3d_editor.Geometric_figures
             return [.. list.Select(x => x.index)];
         }
 
+        public int GetCylindersCountBetweenTwoSpheres(Vector3 spherePos1, float radius1, Vector3 spherePos2, float radius2)
+        {
+            List<int> list1 = GetCylindersIndeciesInSphere(spherePos1, radius1);
+            List<int> list2 = GetCylindersIndeciesInSphere(spherePos2, radius2);
+
+            List<int> resList = [.. list1.Intersect(list2)];
+            return resList.Count;
+        }
+
         public void MoveCylindersWithSphere(Vector3 spherePos, float radius, Vector3 moveVector)
         {
             List<(int index, bool isPoint1)> list = GetCylindersPointsInSphere(spherePos, radius);

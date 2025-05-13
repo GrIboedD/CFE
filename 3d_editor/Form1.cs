@@ -137,7 +137,7 @@ namespace _3d_editor
             string value = textBox1.Text;
             try
             {
-                float step = float.Parse(value.Replace('.',','));
+                float step = float.Parse(value.Replace('.', ','));
                 if (step < 0.2f || step > 2)
                 {
                     throw new ArgumentException();
@@ -179,6 +179,11 @@ namespace _3d_editor
             {
                 e.Handled = true;
             }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            OpenGL_Window.EnableConnectionMode();
         }
     }
 }
