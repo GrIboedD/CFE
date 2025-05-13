@@ -311,7 +311,7 @@ namespace _3d_editor
             {
                 if (validCandidates.Count == 0)
                 {
-                    clearFlowPanel();
+                    resetPickedObject();
                 }
                 else
                 {
@@ -342,7 +342,7 @@ namespace _3d_editor
 
                 if (pickedIndex == this.pickedIndex && isSpherePicked == this.isSpherePicked)
                 {
-                    clearFlowPanel();
+                    resetPickedObject();
                 }
                 else if (pickedIndex < this.pickedIndex && isSpherePicked == this.isSpherePicked)
                 {
@@ -359,7 +359,7 @@ namespace _3d_editor
 
                     if (!this.isSpherePicked && cylinderIndicesInSphere.Contains(this.pickedIndex))
                     {
-                        clearFlowPanel();
+                        resetPickedObject();
                     }
 
                     foreach (int index in cylinderIndicesInSphere)
@@ -393,6 +393,21 @@ namespace _3d_editor
                     return;
                 }
 
+
+                if (!this.isSpherePicked || this.pickedIndex < 0)
+                {
+                    this.isSpherePicked = true;
+                    this.pickedIndex = pickedIndex;
+                    fillFlowPanelBySphere();
+                    return;
+                }
+
+                if (this.pickedIndex == pickedIndex)
+                {
+                    resetPickedObject();
+                    return;
+                }
+
                 Vector3 spherePos1 = Spheres.GetSpheresCenterCord(this.pickedIndex);
                 float radius1 = Spheres.GetSpheresRadius(this.pickedIndex);
                 Vector3 spherePos2 = Spheres.GetSpheresCenterCord(pickedIndex);
@@ -403,10 +418,14 @@ namespace _3d_editor
                 if (numberOfCylindersInConnection > 0)
                 {
                     MessageBox.Show("Соедние между сферами уже существует!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
                 }
-
-                Cylinders.CreateNewCylinder(spherePos1, spherePos2, 0.06f, Color.Black);
+                else
+                {
+                    Cylinders.CreateNewCylinder(spherePos1, spherePos2, 0.06f, Color.Black);
+                    this.isSpherePicked = false;
+                    this.pickedIndex = Cylinders.GetLastCylinderIndex();
+                    fillFlowPanelByCylinder();
+                }
             }
 
             Dictionary<RayCastingObjectMod, Action> actions = new()
@@ -507,6 +526,7 @@ namespace _3d_editor
 
         public void LoadFromFlypFile(string path)
         {
+            resetPickedObject();
             Spheres.DelAllSpheres();
             Cylinders.DelAllCylinders();
             var flypLoader = new FlypLoader(this);
@@ -712,11 +732,17 @@ namespace _3d_editor
 
             }
         }
+
+        void resetPickedObject()
+        {
+            clearFlowPanel();
+            pickedIndex = -1;
+        }
+
         void clearFlowPanel()
         {
             flowPanel.Controls.Clear();
             flowPanel.Height = 0;
-            pickedIndex = -1;
         }
 
         private void TextBoxProceedValue(TextBox textBox, int mod)

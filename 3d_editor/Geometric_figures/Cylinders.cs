@@ -383,6 +383,11 @@ namespace _3d_editor.Geometric_figures
             return resList.Count;
         }
 
+        public int GetLastCylinderIndex()
+        {
+            return CylindersList.Count - 1;
+        }
+
         public void MoveCylindersWithSphere(Vector3 spherePos, float radius, Vector3 moveVector)
         {
             List<(int index, bool isPoint1)> list = GetCylindersPointsInSphere(spherePos, radius);
