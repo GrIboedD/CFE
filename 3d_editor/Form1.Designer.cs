@@ -39,7 +39,6 @@
             exitToolStripMenuItem = new ToolStripMenuItem();
             cameraToolStripMenuItem = new ToolStripMenuItem();
             resetCameraToolStripMenuItem = new ToolStripMenuItem();
-            changeControlToolStripMenuItem = new ToolStripMenuItem();
             infoToolStripMenuItem = new ToolStripMenuItem();
             controlToolStripMenuItem = new ToolStripMenuItem();
             aboutToolStripMenuItem = new ToolStripMenuItem();
@@ -111,25 +110,26 @@
             // ToolStripMenuItem
             // 
             ToolStripMenuItem.Name = "ToolStripMenuItem";
-            ToolStripMenuItem.Size = new Size(150, 26);
+            ToolStripMenuItem.Size = new Size(224, 26);
             ToolStripMenuItem.Text = "Открыть";
             ToolStripMenuItem.Click += ToolStripMenuItem_Click;
             // 
             // saveToolStripMenuItem
             // 
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            saveToolStripMenuItem.Size = new Size(150, 26);
+            saveToolStripMenuItem.Size = new Size(224, 26);
             saveToolStripMenuItem.Text = "Save";
+            saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(150, 26);
+            exitToolStripMenuItem.Size = new Size(224, 26);
             exitToolStripMenuItem.Text = "Exit";
             // 
             // cameraToolStripMenuItem
             // 
-            cameraToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { resetCameraToolStripMenuItem, changeControlToolStripMenuItem });
+            cameraToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { resetCameraToolStripMenuItem });
             cameraToolStripMenuItem.Name = "cameraToolStripMenuItem";
             cameraToolStripMenuItem.Size = new Size(74, 24);
             cameraToolStripMenuItem.Text = "Camera";
@@ -137,14 +137,9 @@
             // resetCameraToolStripMenuItem
             // 
             resetCameraToolStripMenuItem.Name = "resetCameraToolStripMenuItem";
-            resetCameraToolStripMenuItem.Size = new Size(191, 26);
+            resetCameraToolStripMenuItem.Size = new Size(224, 26);
             resetCameraToolStripMenuItem.Text = "ResetCamera";
-            // 
-            // changeControlToolStripMenuItem
-            // 
-            changeControlToolStripMenuItem.Name = "changeControlToolStripMenuItem";
-            changeControlToolStripMenuItem.Size = new Size(191, 26);
-            changeControlToolStripMenuItem.Text = "ChangeControl";
+            resetCameraToolStripMenuItem.Click += resetCameraToolStripMenuItem_Click;
             // 
             // infoToolStripMenuItem
             // 
@@ -156,13 +151,13 @@
             // controlToolStripMenuItem
             // 
             controlToolStripMenuItem.Name = "controlToolStripMenuItem";
-            controlToolStripMenuItem.Size = new Size(141, 26);
+            controlToolStripMenuItem.Size = new Size(224, 26);
             controlToolStripMenuItem.Text = "Control";
             // 
             // aboutToolStripMenuItem
             // 
             aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            aboutToolStripMenuItem.Size = new Size(141, 26);
+            aboutToolStripMenuItem.Size = new Size(224, 26);
             aboutToolStripMenuItem.Text = "About";
             // 
             // panel1
@@ -284,6 +279,7 @@
             button3.Size = new Size(40, 40);
             button3.TabIndex = 2;
             button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
             // 
             // button4
             // 
@@ -341,7 +337,6 @@
         private ToolStripMenuItem exitToolStripMenuItem;
         private ToolStripMenuItem cameraToolStripMenuItem;
         private ToolStripMenuItem resetCameraToolStripMenuItem;
-        private ToolStripMenuItem changeControlToolStripMenuItem;
         private ToolStripMenuItem infoToolStripMenuItem;
         private ToolStripMenuItem controlToolStripMenuItem;
         private ToolStripMenuItem aboutToolStripMenuItem;

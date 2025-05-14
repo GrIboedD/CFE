@@ -91,16 +91,25 @@ namespace _3d_editor
         {
             OpenFileDialog openFileDialog = new()
             {
-                Title = "Выбор модели",
-                Filter = "3d модель|*.flyp",
+                Title = "Загрузить модель",
+                Filter = "Все поддерживаемые файлы (*.flyp;*.json)|*.flyp;*.json|Flyp модель (*.flyp)|*.flyp|Json формат (*.json)|*.json",
                 FilterIndex = 1,
-                RestoreDirectory = true
+                RestoreDirectory = true,
             };
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 string selectedFilePath = openFileDialog.FileName;
-                OpenGL_Window.LoadFromFlypFile(selectedFilePath);
+                string extension = Path.GetExtension(selectedFilePath).ToLower();
+                switch (extension)
+                {
+                    case ".flyp":
+                        OpenGL_Window.LoadFromFlypFile(selectedFilePath);
+                        break;
+                    case ".json":
+                        OpenGL_Window.LoadFromJson(selectedFilePath);
+                        break;
+                }
             }
         }
 
@@ -184,6 +193,41 @@ namespace _3d_editor
         private void button4_Click(object sender, EventArgs e)
         {
             OpenGL_Window.EnableConnectionMode();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            OpenGL_Window.EnableAddMode();
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string? json = OpenGL_Window.GetJsonStringWithData();
+            if (json is null)
+            {
+                MessageBox.Show("Файл сохранения пуст!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            SaveFileDialog saveFileDialog = new()
+            {
+                Filter = "JSON файл (*.json)|*.json",
+                DefaultExt = "json",
+                AddExtension = true,
+                RestoreDirectory = true,
+                Title = "Сохранить модель"
+            };
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                File.WriteAllText(saveFileDialog.FileName, json);
+            }
+
+        }
+
+        private void resetCameraToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenGL_Window.ResetCamera();
         }
     }
 }

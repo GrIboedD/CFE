@@ -112,6 +112,10 @@ namespace _3d_editor.Geometric_figures
 
         }
 
+        public bool isTheSphereOverlappingAnother(int index)
+        {
+            return isTheSphereOverlappingAnother(SpheresList[index]);
+        }
         private bool isTheSphereOverlappingAnother(OneSphere targetSphere)
         {
             Vector3 targetSpherePos = targetSphere.Position;
@@ -139,7 +143,12 @@ namespace _3d_editor.Geometric_figures
         public void CreateNewSphere(Vector3 position, float radius, Color color, string text = "")
         {
             var vec4Color = new Vector4(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, 1);
-            var sphere = new OneSphere(position, radius, vec4Color, text);
+            CreateNewSphere(position, radius, vec4Color, text);
+        }
+
+        public void CreateNewSphere(Vector3 position, float radius, Vector4 color, string text = "")
+        {
+            var sphere = new OneSphere(position, radius, color, text);
             SpheresList.Add(sphere);
         }
         public override void Update(Matrix4 projectionMatrix, Matrix4 viewMatrix, Vector3 CameraPos)
@@ -163,7 +172,7 @@ namespace _3d_editor.Geometric_figures
 
         }
 
-        public void DrawPickedSphereOutlining(int index)
+        public void DrawPickedSphereOutlining(int index, bool drawOverAll = false)
         {
             BindBuffers(Vertices, Indices);
             Shader.Use();
@@ -187,8 +196,16 @@ namespace _3d_editor.Geometric_figures
             Shader.SetMatrix("model", tempSphere.ModelMatrix);
             Shader.SetMatrix("normalMatrix", tempSphere.NormalMatrix);
 
+            if (drawOverAll)
+            {
+                GL.Disable(EnableCap.DepthTest);
+            }
 
             GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            if (drawOverAll)
+            {
+                GL.Enable(EnableCap.DepthTest);
+            }
             GL.Disable(EnableCap.StencilTest);
         }
 
@@ -271,27 +288,27 @@ namespace _3d_editor.Geometric_figures
             return SpheresList[index].Position;
         }
 
-        public void SetSpheresCenterCord(int index, Vector3 pos)
+        public void SetSpheresCenterCord(int index, Vector3 pos, bool overlapsEnable = false)
         {
             Vector3 oldPos = SpheresList[index].Position;
             SpheresList[index].SetPosition(pos.X, pos.Y, pos.Z);
-            if (isTheSphereOverlappingAnother(SpheresList[index]))
+            if (isTheSphereOverlappingAnother(SpheresList[index]) && !overlapsEnable)
             {
                 SpheresList[index].SetPosition(oldPos.X, oldPos.Y, oldPos.Z);
                 throw new InvalidOperationException("The sphere overlaps another sphere");
             }
-        }
+        } 
 
         public float GetSpheresRadius(int index)
         {
             return SpheresList[index].Radius;
         }
 
-        public void SetSpheresRadius(int index, float radius)
+        public void SetSpheresRadius(int index, float radius, bool OverlapsEnable = false)
         {
             float oldRadius = SpheresList[index].Radius;
             SpheresList[index].SetRadius(radius);
-            if (isTheSphereOverlappingAnother(SpheresList[index]))
+            if (isTheSphereOverlappingAnother(SpheresList[index]) && !OverlapsEnable)
             {
                 SpheresList[index].SetRadius(oldRadius);
                 throw new InvalidOperationException("The sphere overlaps another sphere");
@@ -329,6 +346,11 @@ namespace _3d_editor.Geometric_figures
                 positions.Add(sphere.Position);
             }
             return positions;
+        }
+
+        public int GetLastSphereIndex()
+        {
+            return SpheresList.Count - 1;
         }
 
         public void DelAllSpheres()

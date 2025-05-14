@@ -81,7 +81,6 @@ namespace _3d_editor.Geometric_figures
                 point.X = step * xSteps;
                 point.Y = yCord;
                 point.Z = step * zSteps;
-                Console.WriteLine(point);
                 return point;
             }
 

@@ -127,6 +127,7 @@ namespace _3d_editor.Geometric_figures
             Shader.SetVec("material.color", tempCylinder.Color);
 
             GL.DrawElements(PrimitiveType.Triangles, this.Indices.Length, DrawElementsType.UnsignedInt, 0);
+
             GL.Disable(EnableCap.StencilTest);
         }
         public void DrawPickedCylinder(int index)
@@ -336,16 +337,22 @@ namespace _3d_editor.Geometric_figures
 
         public void CreateNewCylinder(Vector3 Point1, Vector3 Point2, float radius, Color color)
         {
+            var vec4Color = new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, 1);
+            CreateNewCylinder(Point1, Point2, radius, vec4Color);
+        }
+
+        public void CreateNewCylinder(Vector3 Point1, Vector3 Point2, float radius, Vector4 color)
+        {
             Vector3 aPoint1 = IsVecOneLessVecTwo(Point1, Point2) ? Point1 : Point2;
             Vector3 aPoint2 = IsVecOneLessVecTwo(Point1, Point2) ? Point2 : Point1;
             if (!IsCylinderExists(aPoint1, aPoint2))
             {
-                var vec4Color = new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, 1);
-                var cylinder = new OneCylinder(aPoint1, aPoint2, radius, vec4Color);
+                var cylinder = new OneCylinder(aPoint1, aPoint2, radius, color);
                 CylindersList.Add(cylinder);
             }
         }
-        
+
+
         private List<(int index, bool isPoint1)> GetCylindersPointsInSphere(Vector3 spherePos, float radius)
         {
             var list = new List<(int index, bool isPoint1)> ();
@@ -419,6 +426,16 @@ namespace _3d_editor.Geometric_figures
             return CylindersList[index].Radius;
         }
 
+        public Vector3 GetPoint1(int index)
+        {
+            return CylindersList[index].Point1;
+        }
+
+        public Vector3 GetPoint2(int index)
+        {
+            return CylindersList[index].Point2;
+        }
+
         public void SetCylinderColor(int index, Vector4 color)
         {
             CylindersList[index].Color = color;
@@ -428,6 +445,7 @@ namespace _3d_editor.Geometric_figures
         {
             CylindersList[index].SetRadius(radius);
         }
+
 
         private class OneCylinder
         {

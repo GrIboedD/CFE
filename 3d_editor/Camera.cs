@@ -27,6 +27,18 @@ namespace _3d_editor
             RotateCamera(pitch: -float.Pi / 4);
         }
 
+        public void ResetCamera()
+        {
+            var cameraPosition = new Vector3(0, 0, 5);
+            var cameraTarget = new Vector3(0, 0, 0);
+
+            cameraPositionMatrix = Matrix4.CreateTranslation(cameraPosition);
+            rotateMatrix = Matrix4.CreateFromQuaternion(Quaternion.Identity);
+            targetPositionMartix = Matrix4.CreateTranslation(cameraTarget);
+            CalculateViewMatrix();
+            RotateCamera(pitch: -float.Pi / 4);
+        }
+
         public Matrix4 GetViewMatrix()
         {
             return viewMatrix;

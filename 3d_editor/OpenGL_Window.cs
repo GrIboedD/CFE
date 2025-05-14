@@ -25,7 +25,6 @@ namespace _3d_editor
         private bool LeftMouseMoveEnable = false;
 
         private bool RayCastingGridEnable = false;
-        
 
         const float keySpeed = 0.005f;
         const float mouseRotateSensitivity = 0.007f;
@@ -61,6 +60,8 @@ namespace _3d_editor
 
         private bool isSpherePicked = true;
 
+
+
         private readonly Dictionary<string, bool> keyStates = new()
         {
             {"up", false },
@@ -71,6 +72,13 @@ namespace _3d_editor
             {"leftMouse", false },
             {"middleMouse", false },
         };
+
+        private static class SpherePattern
+        {
+            static public float radius = 0.5f;
+            static public Color color = Color.Red;
+            static public string text = "";
+        }
 
         private enum RayCastingObjectMod
         {
@@ -195,7 +203,7 @@ namespace _3d_editor
                     if (isSpherePicked)
                     {
                         Spheres.DrawPickedSphere(pickedIndex);
-                        Spheres.DrawPickedSphereOutlining(pickedIndex);
+                        Spheres.DrawPickedSphereOutlining(pickedIndex, RayCastingGridEnable);
                     }
                     else
                     {
@@ -277,14 +285,68 @@ namespace _3d_editor
             lastMouseY = currentMouseY;
         }
 
-        private void RayCastingGridProceed(MouseEventArgs e)
+
+        private void RayCastingGridMouseMoveProceed(MouseEventArgs e)
         {
             if (!CoordGridEnable || !RayCastingGridEnable)
             {
                 return;
             }
 
-            CoordinateGrid.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+            Vector3? nullablePoint = CoordinateGrid.RayCasting(Camera.GetCameraPositionVector(), GetRayDirection(e.X, e.Y));
+            if (nullablePoint is null)
+            {
+                return;
+            }
+
+            isSpherePicked = true;
+
+            Vector3 point = nullablePoint.Value;
+            
+            if (pickedIndex < 0)
+            {
+                int oldIndex = Spheres.GetLastSphereIndex();
+                Spheres.CreateNewSphere(point, SpherePattern.radius, SpherePattern.color, SpherePattern.text);
+                int index = Spheres.GetLastSphereIndex();
+
+                if (oldIndex == index)
+                {
+                    return;
+                }
+
+                pickedIndex = index;
+                fillFlowPanelBySphere(true, true);
+                return;
+            }
+
+            SpherePattern.radius = Spheres.GetSpheresRadius(pickedIndex);
+            SpherePattern.color = ConvertVector4ToColor(Spheres.GetSpheresColor(pickedIndex));
+            SpherePattern.text = Spheres.GetSpheresText(pickedIndex);
+
+            changeSphereCordsInFlowPanel(point);
+
+            Spheres.SetSpheresCenterCord(pickedIndex, point, true);
+
+        }
+
+        private void RayCastigGridMouseDownProceed()
+        {
+            if (!CoordGridEnable || !RayCastingGridEnable)
+            {
+                return;
+            }
+            if (pickedIndex < 0 || !isSpherePicked)
+            {
+                return;
+            }
+
+            if (Spheres.isTheSphereOverlappingAnother(pickedIndex))
+            {
+                MessageBox.Show("Сфера пересекается с другими сферами!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            resetPickedObject();
         }
 
         private void RayCastingObgProceed(MouseEventArgs e)
@@ -418,6 +480,7 @@ namespace _3d_editor
                 if (numberOfCylindersInConnection > 0)
                 {
                     MessageBox.Show("Соедние между сферами уже существует!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    resetPickedObject();
                 }
                 else
                 {
@@ -454,10 +517,10 @@ namespace _3d_editor
             {
                 keyStates["leftMouse"] = true;
                 RayCastingObgProceed(e);
-                RayCastingGridProceed(e);
+                RayCastigGridMouseDownProceed();
             }
 
-                lastMouseX = e.X;   
+            lastMouseX = e.X;   
             lastMouseY = e.Y;
             currentMouseX = e.X;
             currentMouseY = e.Y;
@@ -479,8 +542,8 @@ namespace _3d_editor
         {
             currentMouseX = e.X;
             currentMouseY = e.Y;
+            RayCastingGridMouseMoveProceed(e);
         }
-
         private void RotateCamera()
         {
             if (!keyStates["rightMouse"]) return;
@@ -533,6 +596,14 @@ namespace _3d_editor
             flypLoader.OpenFlypFile(path);
         }
 
+        public void LoadFromJson(string path)
+        {
+            resetPickedObject();
+            Spheres.DelAllSpheres();
+            Cylinders.DelAllCylinders();
+            Json_OpenGL_Window.ReadJson(path, Spheres, Cylinders);
+        }
+
         public void AddSphere(Vector3 position, float radius, Color color, string text)
         {
             Spheres.CreateNewSphere(position, radius, color, text);
@@ -564,17 +635,28 @@ namespace _3d_editor
         {
             LeftMouseMoveEnable = false;
             RayCastingObjectEnable = true;
+        }
+
+        private void DisableAddMode()
+        {
+            if (pickedIndex >= 0 && isSpherePicked && RayCastingGridEnable)
+            {
+                Spheres.DelSphereByIndex(pickedIndex);
+                resetPickedObject();
+            }
             RayCastingGridEnable = false;
         }
 
         public void EnableClickMode()
         {
             SetPickObjSettings();
+            DisableAddMode();
             currentRayCastingObjectMod = RayCastingObjectMod.change;
         }
 
         public void EnableMoveMode()
         {
+            DisableAddMode();
             LeftMouseMoveEnable = true;
             RayCastingObjectEnable = false;
             RayCastingGridEnable = false;
@@ -582,18 +664,28 @@ namespace _3d_editor
 
         public void EnableDeleteMode()
         {
+            DisableAddMode();
             SetPickObjSettings();
             currentRayCastingObjectMod = RayCastingObjectMod.delete;
         }
 
+        public void EnableAddMode()
+        {
+            LeftMouseMoveEnable = false;
+            RayCastingObjectEnable = false;
+            RayCastingGridEnable = true;
+            resetPickedObject();
+        }
+
         public void EnableConnectionMode()
         {
+            DisableAddMode();
             SetPickObjSettings();
             currentRayCastingObjectMod = RayCastingObjectMod.connect;
         }
 
 
-        private void fillFlowPanelBySphere()
+        private void fillFlowPanelBySphere(bool isCordReadOnly = false, bool OverlapsEnable = false)
         {
             flowPanel.Controls.Clear();
             Vector3 position = Spheres.GetSpheresCenterCord(pickedIndex);
@@ -601,11 +693,11 @@ namespace _3d_editor
             Vector4 color = Spheres.GetSpheresColor(pickedIndex);
             string text = Spheres.GetSpheresText(pickedIndex);
 
-            AddLabelAndTextBox("Position X:", position.X.ToString("F2"), 0);
-            AddLabelAndTextBox("Position Y:", position.Y.ToString("F2"), 1);
-            AddLabelAndTextBox("Position Z:", position.Z.ToString("F2"), 2);
+            AddLabelAndTextBox("Position X:", position.X.ToString("F2"), 0, isCordReadOnly, OverlapsEnable);
+            AddLabelAndTextBox("Position Y:", position.Y.ToString("F2"), 1, isCordReadOnly, OverlapsEnable);
+            AddLabelAndTextBox("Position Z:", position.Z.ToString("F2"), 2, isCordReadOnly, OverlapsEnable);
 
-            AddLabelAndTextBox("Radius:", radius.ToString("F2"), 3);
+            AddLabelAndTextBox("Radius:", radius.ToString("F2"), 3, OverlapsEnable: true);
 
             AddColorPicker("Color:", color, 0);
 
@@ -627,6 +719,8 @@ namespace _3d_editor
 
             flowPanel.Height = 85;
         }
+
+
 
         private void AddColorPicker(string labelText, Vector4 color, int mod)
         {
@@ -692,7 +786,7 @@ namespace _3d_editor
             );
         }
 
-        private void UpdateSphereCoordinate(int coordIndex, float value)
+        private void UpdateSphereCoordinate(int coordIndex, float value, bool OverlapsEnable = false)
         {
             Vector3 newPos = Spheres.GetSpheresCenterCord(pickedIndex);
             switch (coordIndex)
@@ -710,21 +804,21 @@ namespace _3d_editor
             Vector3 oldPos = Spheres.GetSpheresCenterCord(pickedIndex);
             float radius = Spheres.GetSpheresRadius(pickedIndex);
             Vector3 moveVector = newPos - oldPos;
-            Spheres.SetSpheresCenterCord(pickedIndex, newPos);
+            Spheres.SetSpheresCenterCord(pickedIndex, newPos, OverlapsEnable);
             Cylinders.MoveCylindersWithSphere(oldPos, radius, moveVector);
         }
 
-        private void UpdateObjectRadius(int mod, float radius)
+        private void UpdateObjectRadius(int mod, float radius, bool OverlapsEnable = false)
         {
             if (radius <= 0)
             {
-                throw new ArgumentException("Radius is zero or negative");
+               throw new ArgumentException("Radius is zero or negative");
             }
 
             switch (mod)
             {
                 case 3:
-                    Spheres.SetSpheresRadius(pickedIndex, radius);
+                    Spheres.SetSpheresRadius(pickedIndex, radius, OverlapsEnable);
                     break;
                 case 4:
                     Cylinders.SetCylinderRadius(pickedIndex, radius);
@@ -733,19 +827,19 @@ namespace _3d_editor
             }
         }
 
-        void resetPickedObject()
+        private void resetPickedObject()
         {
             clearFlowPanel();
             pickedIndex = -1;
         }
 
-        void clearFlowPanel()
+        private void clearFlowPanel()
         {
             flowPanel.Controls.Clear();
             flowPanel.Height = 0;
         }
 
-        private void TextBoxProceedValue(TextBox textBox, int mod)
+        private void TextBoxProceedValue(TextBox textBox, int mod, bool OverlapsEnable = false)
         {
             string currentText = textBox.Text;
             try
@@ -756,12 +850,12 @@ namespace _3d_editor
                     case 1:
                     case 2:
                         float cord = float.Parse(currentText.Replace('.', ','));
-                        UpdateSphereCoordinate(mod, cord);
+                        UpdateSphereCoordinate(mod, cord, OverlapsEnable);
                         break;
                     case 3:
                     case 4:
                         float radius = float.Parse(currentText.Replace('.', ','));
-                        UpdateObjectRadius(mod, radius);
+                        UpdateObjectRadius(mod, radius, OverlapsEnable);
                         break;
                     case 5:
                         Spheres.SetSpheresText(pickedIndex, currentText);
@@ -786,7 +880,7 @@ namespace _3d_editor
                 textBox.Text = (string)textBox.Tag;
             }
         }
-        private void AddLabelAndTextBox(string labelText, string textBoxText, int mod)
+        private void AddLabelAndTextBox(string labelText, string textBoxText, int mod, bool isTextBoxReadOnly = false, bool OverlapsEnable = false)
         {
             var label = new Label
             {
@@ -800,7 +894,8 @@ namespace _3d_editor
                 Text = textBoxText,
                 Tag = textBoxText,
                 Width = 100,
-                Margin = new Padding(3, 10, 3, 3)
+                Margin = new Padding(3, 10, 3, 3),
+                ReadOnly = isTextBoxReadOnly
             };
 
             textBox.KeyDown += (s, e) =>
@@ -809,13 +904,13 @@ namespace _3d_editor
                 {
                     return;
                 }
-                TextBoxProceedValue(textBox, mod);
+                TextBoxProceedValue(textBox, mod, OverlapsEnable);
                 e.SuppressKeyPress = true;
             };
 
             textBox.Leave += (s, e) =>
             {
-                TextBoxProceedValue(textBox, mod);
+                TextBoxProceedValue(textBox, mod, OverlapsEnable);
             };
 
             flowPanel.Controls.Add(label);
@@ -823,6 +918,29 @@ namespace _3d_editor
 
             flowPanel.SetFlowBreak(textBox, true);
 
+        }
+
+        private void changeSphereCordsInFlowPanel(Vector3 cords)
+        {
+            List<Control> controlList = [.. flowPanel.Controls.Cast<Control>()];
+
+            Control xTextBox = controlList[1];
+            Control yTextBox = controlList[3];
+            Control zTextBox = controlList[5];
+
+            xTextBox.Text = cords.X.ToString("F2");
+            yTextBox.Text = cords.Y.ToString("F2");
+            zTextBox.Text = cords.Z.ToString("F2");
+        }
+
+        public string? GetJsonStringWithData()
+        {
+            return Json_OpenGL_Window.GetJson(Spheres, Cylinders);
+        }
+
+        public void ResetCamera()
+        {
+            Camera.ResetCamera();
         }
     }
 }
