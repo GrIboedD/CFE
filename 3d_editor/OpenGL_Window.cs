@@ -1,22 +1,16 @@
 ﻿using _3d_editor.Geometric_figures;
-using Microsoft.VisualBasic.Logging;
 using OpenTK.GLControl;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
-using System;
 using System.ComponentModel;
 using System.Data;
-using System.Globalization;
-using System.Linq.Expressions;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 
 namespace _3d_editor
 {
     [ToolboxItem(true)]
     public partial class OpenGL_Window: GLControl
-    {
+    {   
 
         private bool RayCastingObjectEnable = true;
 
@@ -427,6 +421,10 @@ namespace _3d_editor
 
                     foreach (int index in cylinderIndicesInSphere)
                     {
+                        if (index < this.pickedIndex && !this.isSpherePicked)
+                        {
+                            this.pickedIndex--;
+                        }
                         Cylinders.DelCylinderByIndex(index);
                     }
                     Spheres.DelSphereByIndex(pickedIndex);
@@ -809,7 +807,7 @@ namespace _3d_editor
         {
             if (radius <= 0)
             {
-               throw new ArgumentException("Radius is zero or negative");
+               throw new ArgumentException("Радиус должен быть больше 0!");
             }
 
             switch (mod)
@@ -854,6 +852,9 @@ namespace _3d_editor
                         UpdateObjectRadius(mod, radius, OverlapsEnable);
                         break;
                     case 5:
+                        string invalidChars = "<>:\"/\\|?*";
+                        if (currentText.IndexOfAny(invalidChars.ToCharArray()) != -1)
+                            throw new ArgumentException("Текст содержит недопустимые символы!");
                         Spheres.SetSpheresText(pickedIndex, currentText);
                         break;
                 }
@@ -867,9 +868,9 @@ namespace _3d_editor
             {
                 MessageBox.Show("Изменение параметров ведет к пересечению сфер!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-            catch (ArgumentException)
+            catch (ArgumentException ex)
             {
-                MessageBox.Show("Радиус должен быть больше 0!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(ex.Message, "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             finally
             {

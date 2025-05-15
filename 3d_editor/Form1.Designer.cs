@@ -55,11 +55,26 @@
             button3 = new Button();
             button4 = new Button();
             button5 = new Button();
+            tabControl1 = new TabControl();
+            tabPage1 = new TabPage();
+            tabPage2 = new TabPage();
+            panel3 = new Panel();
+            button6 = new Button();
+            comboBox1 = new ComboBox();
+            label3 = new Label();
+            dataGridView1 = new DataGridView();
+            bindingSource1 = new BindingSource(components);
             menuStrip1.SuspendLayout();
             panel1.SuspendLayout();
             panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
             flowLayoutPanel2.SuspendLayout();
+            tabControl1.SuspendLayout();
+            tabPage1.SuspendLayout();
+            tabPage2.SuspendLayout();
+            panel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)bindingSource1).BeginInit();
             SuspendLayout();
             // 
             // OpenGL_Window
@@ -69,11 +84,11 @@
             OpenGL_Window.Dock = DockStyle.Fill;
             OpenGL_Window.Flags = OpenTK.Windowing.Common.ContextFlags.ForwardCompatible;
             OpenGL_Window.IsEventDriven = true;
-            OpenGL_Window.Location = new Point(0, 28);
+            OpenGL_Window.Location = new Point(3, 3);
             OpenGL_Window.Name = "OpenGL_Window";
             OpenGL_Window.Profile = OpenTK.Windowing.Common.ContextProfile.Any;
             OpenGL_Window.SharedContext = null;
-            OpenGL_Window.Size = new Size(1017, 612);
+            OpenGL_Window.Size = new Size(910, 573);
             OpenGL_Window.TabIndex = 1;
             OpenGL_Window.Load += OpenGL_Window_Load;
             OpenGL_Window.Click += OpenGL_Window_Click;
@@ -96,7 +111,7 @@
             menuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItem1, cameraToolStripMenuItem, infoToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new Size(1017, 28);
+            menuStrip1.Size = new Size(924, 28);
             menuStrip1.TabIndex = 3;
             menuStrip1.Text = "menuStrip1";
             // 
@@ -132,8 +147,8 @@
             // 
             cameraToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { resetCameraToolStripMenuItem });
             cameraToolStripMenuItem.Name = "cameraToolStripMenuItem";
-            cameraToolStripMenuItem.Size = new Size(74, 24);
-            cameraToolStripMenuItem.Text = "Camera";
+            cameraToolStripMenuItem.Size = new Size(76, 24);
+            cameraToolStripMenuItem.Text = "Камера";
             // 
             // resetCameraToolStripMenuItem
             // 
@@ -146,20 +161,22 @@
             // 
             infoToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlToolStripMenuItem, aboutToolStripMenuItem });
             infoToolStripMenuItem.Name = "infoToolStripMenuItem";
-            infoToolStripMenuItem.Size = new Size(49, 24);
-            infoToolStripMenuItem.Text = "Info";
+            infoToolStripMenuItem.Size = new Size(81, 24);
+            infoToolStripMenuItem.Text = "Справка";
             // 
             // controlToolStripMenuItem
             // 
             controlToolStripMenuItem.Name = "controlToolStripMenuItem";
-            controlToolStripMenuItem.Size = new Size(187, 26);
+            controlToolStripMenuItem.Size = new Size(224, 26);
             controlToolStripMenuItem.Text = "Управление";
+            controlToolStripMenuItem.Click += controlToolStripMenuItem_Click;
             // 
             // aboutToolStripMenuItem
             // 
             aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            aboutToolStripMenuItem.Size = new Size(187, 26);
+            aboutToolStripMenuItem.Size = new Size(224, 26);
             aboutToolStripMenuItem.Text = "О программе";
+            aboutToolStripMenuItem.Click += aboutToolStripMenuItem_Click;
             // 
             // panel1
             // 
@@ -169,7 +186,7 @@
             panel1.Controls.Add(flowLayoutPanel1);
             panel1.Controls.Add(panel2);
             panel1.Controls.Add(flowLayoutPanel2);
-            panel1.Location = new Point(781, 28);
+            panel1.Location = new Point(677, 3);
             panel1.Name = "panel1";
             panel1.Size = new Size(236, 164);
             panel1.TabIndex = 4;
@@ -306,13 +323,100 @@
             button5.UseVisualStyleBackColor = true;
             button5.Click += button5_Click;
             // 
+            // tabControl1
+            // 
+            tabControl1.Controls.Add(tabPage1);
+            tabControl1.Controls.Add(tabPage2);
+            tabControl1.Dock = DockStyle.Fill;
+            tabControl1.Location = new Point(0, 28);
+            tabControl1.Name = "tabControl1";
+            tabControl1.SelectedIndex = 0;
+            tabControl1.Size = new Size(924, 612);
+            tabControl1.TabIndex = 5;
+            // 
+            // tabPage1
+            // 
+            tabPage1.Controls.Add(panel1);
+            tabPage1.Controls.Add(OpenGL_Window);
+            tabPage1.Location = new Point(4, 29);
+            tabPage1.Name = "tabPage1";
+            tabPage1.Padding = new Padding(3);
+            tabPage1.Size = new Size(916, 579);
+            tabPage1.TabIndex = 0;
+            tabPage1.Text = "3D редактор";
+            tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // tabPage2
+            // 
+            tabPage2.Controls.Add(panel3);
+            tabPage2.Controls.Add(dataGridView1);
+            tabPage2.Location = new Point(4, 29);
+            tabPage2.Name = "tabPage2";
+            tabPage2.Padding = new Padding(3);
+            tabPage2.Size = new Size(916, 579);
+            tabPage2.TabIndex = 1;
+            tabPage2.Text = "База данных";
+            tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // panel3
+            // 
+            panel3.Controls.Add(button6);
+            panel3.Controls.Add(comboBox1);
+            panel3.Controls.Add(label3);
+            panel3.Dock = DockStyle.Top;
+            panel3.Location = new Point(3, 3);
+            panel3.Name = "panel3";
+            panel3.Size = new Size(910, 34);
+            panel3.TabIndex = 3;
+            // 
+            // button6
+            // 
+            button6.AutoSize = true;
+            button6.Dock = DockStyle.Right;
+            button6.Location = new Point(735, 0);
+            button6.Name = "button6";
+            button6.Size = new Size(175, 34);
+            button6.TabIndex = 2;
+            button6.Text = "Сохранить изменения";
+            button6.UseVisualStyleBackColor = true;
+            button6.Click += button6_Click;
+            // 
+            // comboBox1
+            // 
+            comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox1.FormattingEnabled = true;
+            comboBox1.Location = new Point(82, 3);
+            comboBox1.Name = "comboBox1";
+            comboBox1.Size = new Size(371, 28);
+            comboBox1.TabIndex = 0;
+            comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(8, 6);
+            label3.Name = "label3";
+            label3.Size = new Size(68, 20);
+            label3.TabIndex = 1;
+            label3.Text = "Таблица";
+            // 
+            // dataGridView1
+            // 
+            dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView1.Location = new Point(3, 36);
+            dataGridView1.Name = "dataGridView1";
+            dataGridView1.RowHeadersWidth = 51;
+            dataGridView1.Size = new Size(910, 540);
+            dataGridView1.TabIndex = 2;
+            // 
             // CFE
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1017, 640);
-            Controls.Add(panel1);
-            Controls.Add(OpenGL_Window);
+            ClientSize = new Size(924, 640);
+            Controls.Add(tabControl1);
             Controls.Add(menuStrip1);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip1;
@@ -327,6 +431,14 @@
             panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
             flowLayoutPanel2.ResumeLayout(false);
+            tabControl1.ResumeLayout(false);
+            tabPage1.ResumeLayout(false);
+            tabPage1.PerformLayout();
+            tabPage2.ResumeLayout(false);
+            panel3.ResumeLayout(false);
+            panel3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)bindingSource1).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -357,5 +469,14 @@
         private Button button3;
         private Button button4;
         private Button button5;
+        private TabControl tabControl1;
+        private TabPage tabPage1;
+        private TabPage tabPage2;
+        private ComboBox comboBox1;
+        private DataGridView dataGridView1;
+        private Label label3;
+        private BindingSource bindingSource1;
+        private Panel panel3;
+        private Button button6;
     }
 }

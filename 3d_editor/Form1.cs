@@ -1,3 +1,4 @@
+﻿using System.Data;
 using System.Drawing;
 using System.Globalization;
 
@@ -6,6 +7,8 @@ namespace _3d_editor
 
     public partial class CFE : Form
     {
+        DataBase dataBase;
+
         public CFE()
         {
             InitializeComponent();
@@ -22,6 +25,10 @@ namespace _3d_editor
             numericUpDown1.Increment = 0.5m;
             textBox1.Text = "0,5";
             textBox1.Tag = "0,5";
+
+            dataBase = new DataBase(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=DataBase\Химическая база.accdb;");
+            List<string> tabelsNames = dataBase.GetTablesNames();
+            comboBox1.Items.AddRange(tabelsNames.ToArray());
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -91,8 +98,8 @@ namespace _3d_editor
         {
             OpenFileDialog openFileDialog = new()
             {
-                Title = "��������� ������",
-                Filter = "��� �������������� ����� (*.flyp;*.json)|*.flyp;*.json|Flyp ������ (*.flyp)|*.flyp|Json ������ (*.json)|*.json",
+                Title = "Загрузить модель",
+                Filter = "Все поддерживаемые файлы (*.flyp;*.json)|*.flyp;*.json|Flyp модель (*.flyp)|*.flyp|Json формат (*.json)|*.json",
                 FilterIndex = 1,
                 RestoreDirectory = true,
             };
@@ -158,12 +165,12 @@ namespace _3d_editor
             catch (FormatException)
             {
                 textBox1.Text = (string)textBox1.Tag;
-                MessageBox.Show("�������� ������ �����!", "��������", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Неверный формат числа!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (ArgumentException)
             {
                 textBox1.Text = (string)textBox1.Tag;
-                MessageBox.Show("��� ����� �� 0.2 �� 2!", "��������", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Шаг сетки от 0.2 до 2!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -207,17 +214,17 @@ namespace _3d_editor
             string? json = OpenGL_Window.GetJsonStringWithData();
             if (json is null)
             {
-                MessageBox.Show("���� ���������� ����!", "��������", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Файл сохранения пуст!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             SaveFileDialog saveFileDialog = new()
             {
-                Filter = "JSON ���� (*.json)|*.json",
+                Filter = "JSON файл (*.json)|*.json",
                 DefaultExt = "json",
                 AddExtension = true,
                 RestoreDirectory = true,
-                Title = "��������� ������"
+                Title = "Сохранить модель"
             };
 
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
@@ -243,5 +250,72 @@ namespace _3d_editor
             Bitmap bmp = new Bitmap(img, new Size(32, 32));
             return new Cursor(bmp.GetHicon());
         }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DataTable table = new();
+            dataBase.FillDataTable(table, comboBox1.Text);
+            bindingSource1.DataSource = table;
+            dataGridView1.DataSource = null;
+            dataGridView1.DataSource = bindingSource1;
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            DataTable table = (DataTable)bindingSource1.DataSource;
+            dataBase.UpdateDataBase(table, comboBox1.Text);
+            DataTable newTable = new();
+            dataBase.FillDataTable(newTable, comboBox1.Text);
+            bindingSource1.DataSource = newTable;
+            dataGridView1.DataSource = null;
+            dataGridView1.DataSource = bindingSource1;
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string helpText =
+@"Программа предназначена для редактирования химических
+соединений. С её помощью вы можете изменить информацию о
+любом веществе из базы данных, включая его название,
+молекулярную формулу и физико-химические свойства.
+Также доступна функция редактирования 3D модели
+молекулярной структуры";
+
+            helpText = helpText.Replace(" ", "\u00A0");
+
+            MessageBox.Show(
+                helpText,
+                "Справка",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
+        private void controlToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string helpText =
+@"Для просмотра и взаимодействия с 3D-моделью
+используйте следующие элементы управления:
+• Зажмите левую кнопку мыши в режиме просмотра
+и перемещайте курсор, чтобы передвигать модель
+по плоскости;
+• Для вращения модели вокруг оси удерживайте 
+правую кнопку мыши и перемещайте курсор;
+• Чтобы вращать модель относительно позиции 
+камеры, зажмите среднюю кнопку мыши (колесо)
+и перемещайте курсор.
+Дополнительно перемещать модель можно с помощью
+стрелок на клавиатуре (←, →, ↑, ↓).";
+
+            helpText = helpText.Replace(" ", "\u00A0");
+
+            MessageBox.Show(
+                helpText,
+                "Справка",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
     }
 }
