@@ -158,12 +158,12 @@ namespace _3d_editor
             catch (FormatException)
             {
                 textBox1.Text = (string)textBox1.Tag;
-                MessageBox.Show("Неверный формат числа!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Неверный формат числа!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (ArgumentException)
             {
                 textBox1.Text = (string)textBox1.Tag;
-                MessageBox.Show("Шаг сетки от 0.2 до 2!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Шаг сетки от 0.2 до 2!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -178,7 +178,7 @@ namespace _3d_editor
 
         private void button5_Click(object sender, EventArgs e)
         {
-            OpenGL_Window.Cursor = Cursors.Cross;
+            OpenGL_Window.Cursor = GetCustomCursorFromImage("ImagesAndIcons/free-icon-cross-7699001.png");
             OpenGL_Window.EnableDeleteMode();
         }
 
@@ -192,11 +192,13 @@ namespace _3d_editor
 
         private void button4_Click(object sender, EventArgs e)
         {
+            OpenGL_Window.Cursor = GetCustomCursorFromImage("ImagesAndIcons/free-icon-cylinder-8726474.png");
             OpenGL_Window.EnableConnectionMode();
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
+            OpenGL_Window.Cursor = GetCustomCursorFromImage("ImagesAndIcons/free-icon-circle-14448782.png");
             OpenGL_Window.EnableAddMode();
         }
 
@@ -205,7 +207,7 @@ namespace _3d_editor
             string? json = OpenGL_Window.GetJsonStringWithData();
             if (json is null)
             {
-                MessageBox.Show("Файл сохранения пуст!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Файл сохранения пуст!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -228,6 +230,18 @@ namespace _3d_editor
         private void resetCameraToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenGL_Window.ResetCamera();
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private Cursor GetCustomCursorFromImage(string filePath)
+        {
+            Image img = Image.FromFile(filePath);
+            Bitmap bmp = new Bitmap(img, new Size(32, 32));
+            return new Cursor(bmp.GetHicon());
         }
     }
 }

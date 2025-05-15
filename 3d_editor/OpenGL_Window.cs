@@ -137,6 +137,7 @@ namespace _3d_editor
             CoordinateGrid = new(vertexPathCoordinateGrid, fragmentPathCoordinateGrid);
 
             this.flowPanel = flowPanel;
+            this.flowPanel.AutoSize = true;
         }
 
         public void DoResize()
@@ -342,7 +343,7 @@ namespace _3d_editor
 
             if (Spheres.isTheSphereOverlappingAnother(pickedIndex))
             {
-                MessageBox.Show("Сфера пересекается с другими сферами!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Сфера пересекается с другими сферами!", "Внимане", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -702,8 +703,6 @@ namespace _3d_editor
             AddColorPicker("Color:", color, 0);
 
             AddLabelAndTextBox("Text:", text, 5);
-
-            flowPanel.Height = 245;
         }
 
         private void fillFlowPanelByCylinder()
@@ -716,8 +715,6 @@ namespace _3d_editor
             AddLabelAndTextBox("Radius:", radius.ToString("F2"), 4);
 
             AddColorPicker("Color:", color, 1);
-
-            flowPanel.Height = 85;
         }
 
 
@@ -836,7 +833,6 @@ namespace _3d_editor
         private void clearFlowPanel()
         {
             flowPanel.Controls.Clear();
-            flowPanel.Height = 0;
         }
 
         private void TextBoxProceedValue(TextBox textBox, int mod, bool OverlapsEnable = false)
@@ -865,15 +861,15 @@ namespace _3d_editor
             }
             catch (FormatException)
             {
-                MessageBox.Show("Неверный формат числа!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Неверный формат числа!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (InvalidOperationException)
             {
-                MessageBox.Show("Изменение параметров ведет к пересечению сфер!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Изменение параметров ведет к пересечению сфер!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (ArgumentException)
             {
-                MessageBox.Show("Радиус должен быть больше 0!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Радиус должен быть больше 0!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             finally
             {
@@ -927,7 +923,6 @@ namespace _3d_editor
             Control xTextBox = controlList[1];
             Control yTextBox = controlList[3];
             Control zTextBox = controlList[5];
-
             xTextBox.Text = cords.X.ToString("F2");
             yTextBox.Text = cords.Y.ToString("F2");
             zTextBox.Text = cords.Z.ToString("F2");

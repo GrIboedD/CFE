@@ -65,13 +65,13 @@
             // OpenGL_Window
             // 
             OpenGL_Window.API = OpenTK.Windowing.Common.ContextAPI.OpenGL;
-            OpenGL_Window.APIVersion = new Version(3, 3, 0, 0);
+            OpenGL_Window.APIVersion = new Version(3, 1, 0, 0);
             OpenGL_Window.Dock = DockStyle.Fill;
             OpenGL_Window.Flags = OpenTK.Windowing.Common.ContextFlags.ForwardCompatible;
             OpenGL_Window.IsEventDriven = true;
             OpenGL_Window.Location = new Point(0, 28);
             OpenGL_Window.Name = "OpenGL_Window";
-            OpenGL_Window.Profile = OpenTK.Windowing.Common.ContextProfile.Core;
+            OpenGL_Window.Profile = OpenTK.Windowing.Common.ContextProfile.Any;
             OpenGL_Window.SharedContext = null;
             OpenGL_Window.Size = new Size(1017, 612);
             OpenGL_Window.TabIndex = 1;
@@ -110,22 +110,23 @@
             // ToolStripMenuItem
             // 
             ToolStripMenuItem.Name = "ToolStripMenuItem";
-            ToolStripMenuItem.Size = new Size(224, 26);
+            ToolStripMenuItem.Size = new Size(192, 26);
             ToolStripMenuItem.Text = "Открыть";
             ToolStripMenuItem.Click += ToolStripMenuItem_Click;
             // 
             // saveToolStripMenuItem
             // 
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            saveToolStripMenuItem.Size = new Size(224, 26);
-            saveToolStripMenuItem.Text = "Save";
+            saveToolStripMenuItem.Size = new Size(192, 26);
+            saveToolStripMenuItem.Text = "Сохранить как";
             saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(224, 26);
-            exitToolStripMenuItem.Text = "Exit";
+            exitToolStripMenuItem.Size = new Size(192, 26);
+            exitToolStripMenuItem.Text = "Выйти";
+            exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
             // cameraToolStripMenuItem
             // 
@@ -137,8 +138,8 @@
             // resetCameraToolStripMenuItem
             // 
             resetCameraToolStripMenuItem.Name = "resetCameraToolStripMenuItem";
-            resetCameraToolStripMenuItem.Size = new Size(224, 26);
-            resetCameraToolStripMenuItem.Text = "ResetCamera";
+            resetCameraToolStripMenuItem.Size = new Size(212, 26);
+            resetCameraToolStripMenuItem.Text = "Сбросить камеру";
             resetCameraToolStripMenuItem.Click += resetCameraToolStripMenuItem_Click;
             // 
             // infoToolStripMenuItem
@@ -151,14 +152,14 @@
             // controlToolStripMenuItem
             // 
             controlToolStripMenuItem.Name = "controlToolStripMenuItem";
-            controlToolStripMenuItem.Size = new Size(224, 26);
-            controlToolStripMenuItem.Text = "Control";
+            controlToolStripMenuItem.Size = new Size(187, 26);
+            controlToolStripMenuItem.Text = "Управление";
             // 
             // aboutToolStripMenuItem
             // 
             aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            aboutToolStripMenuItem.Size = new Size(224, 26);
-            aboutToolStripMenuItem.Text = "About";
+            aboutToolStripMenuItem.Size = new Size(187, 26);
+            aboutToolStripMenuItem.Text = "О программе";
             // 
             // panel1
             // 
@@ -177,13 +178,14 @@
             // 
             flowLayoutPanel1.BorderStyle = BorderStyle.FixedSingle;
             flowLayoutPanel1.Dock = DockStyle.Top;
-            flowLayoutPanel1.Location = new Point(0, 160);
+            flowLayoutPanel1.Location = new Point(0, 129);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
             flowLayoutPanel1.Size = new Size(234, 0);
             flowLayoutPanel1.TabIndex = 4;
             // 
             // panel2
             // 
+            panel2.AutoSize = true;
             panel2.BorderStyle = BorderStyle.FixedSingle;
             panel2.Controls.Add(textBox1);
             panel2.Controls.Add(numericUpDown1);
@@ -192,12 +194,12 @@
             panel2.Dock = DockStyle.Top;
             panel2.Location = new Point(0, 48);
             panel2.Name = "panel2";
-            panel2.Size = new Size(234, 112);
+            panel2.Size = new Size(234, 81);
             panel2.TabIndex = 3;
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(121, 61);
+            textBox1.Location = new Point(122, 49);
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(93, 27);
             textBox1.TabIndex = 3;
@@ -208,7 +210,7 @@
             // numericUpDown1
             // 
             numericUpDown1.DecimalPlaces = 2;
-            numericUpDown1.Location = new Point(121, 24);
+            numericUpDown1.Location = new Point(122, 12);
             numericUpDown1.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
             numericUpDown1.Minimum = new decimal(new int[] { 1000, 0, 0, int.MinValue });
             numericUpDown1.Name = "numericUpDown1";
@@ -219,7 +221,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(34, 64);
+            label2.Location = new Point(35, 52);
             label2.Name = "label2";
             label2.Size = new Size(81, 20);
             label2.TabIndex = 1;
@@ -228,7 +230,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(2, 26);
+            label1.Location = new Point(3, 14);
             label1.Name = "label1";
             label1.Size = new Size(113, 20);
             label1.TabIndex = 0;
@@ -236,6 +238,7 @@
             // 
             // flowLayoutPanel2
             // 
+            flowLayoutPanel2.AutoSize = true;
             flowLayoutPanel2.BorderStyle = BorderStyle.FixedSingle;
             flowLayoutPanel2.Controls.Add(button1);
             flowLayoutPanel2.Controls.Add(button2);
@@ -319,6 +322,7 @@
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
             panel1.ResumeLayout(false);
+            panel1.PerformLayout();
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
