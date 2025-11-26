@@ -723,6 +723,7 @@ namespace _3d_editor
             {
                 Text = labelText,
                 Width = 100,
+                Height = 60,
                 Margin = new Padding(3, 10, 3, 3)
             };
 
@@ -883,7 +884,8 @@ namespace _3d_editor
             {
                 Text = labelText,   
                 Width = 100,
-                Margin = new Padding(3, 10, 3, 3)
+                Height = 60,
+                Margin = new Padding(3, 10, 3, 10)
             };
 
             var textBox = new TextBox
@@ -891,7 +893,8 @@ namespace _3d_editor
                 Text = textBoxText,
                 Tag = textBoxText,
                 Width = 100,
-                Margin = new Padding(3, 10, 3, 3),
+                Height = 60,
+                Margin = new Padding(3, 10, 3, 10),
                 ReadOnly = isTextBoxReadOnly
             };
 

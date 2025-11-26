@@ -7,8 +7,6 @@ namespace _3d_editor
 
     public partial class CFE : Form
     {
-        DataBase dataBase;
-
         public CFE()
         {
             InitializeComponent();
@@ -25,10 +23,6 @@ namespace _3d_editor
             numericUpDown1.Increment = 0.5m;
             textBox1.Text = "0,5";
             textBox1.Tag = "0,5";
-
-            dataBase = new DataBase(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=DataBase\Химическая база.accdb;");
-            List<string> tabelsNames = dataBase.GetTablesNames();
-            comboBox1.Items.AddRange(tabelsNames.ToArray());
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -249,26 +243,6 @@ namespace _3d_editor
             Image img = Image.FromFile(filePath);
             Bitmap bmp = new Bitmap(img, new Size(32, 32));
             return new Cursor(bmp.GetHicon());
-        }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            DataTable table = new();
-            dataBase.FillDataTable(table, comboBox1.Text);
-            bindingSource1.DataSource = table;
-            dataGridView1.DataSource = null;
-            dataGridView1.DataSource = bindingSource1;
-        }
-
-        private void button6_Click(object sender, EventArgs e)
-        {
-            DataTable table = (DataTable)bindingSource1.DataSource;
-            dataBase.UpdateDataBase(table, comboBox1.Text);
-            DataTable newTable = new();
-            dataBase.FillDataTable(newTable, comboBox1.Text);
-            bindingSource1.DataSource = newTable;
-            dataGridView1.DataSource = null;
-            dataGridView1.DataSource = bindingSource1;
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
