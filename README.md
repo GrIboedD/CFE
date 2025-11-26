@@ -8,6 +8,9 @@ CFE (Chemical Formula Editor) — это десктопное приложени
 
 Приложение создано в качестве учебного проекта.
 
+<img width="2880" height="1704" alt="image" src="https://github.com/user-attachments/assets/8330b4d9-bc6f-4738-b66f-6e3ad0ee1ddc" />
+
+
 ## Основные возможности
 
 - Создание и редактирование 3D моделей молекулярных структур
